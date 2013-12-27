@@ -109,6 +109,8 @@ class Circuit(object):
         #   Create a list of all the nodes to select from, emphasizing ground
         self.all_nodes = (['0'] * 3) + ["n%d" % i for i in range(1, self.num_nodes)]
 
+        if passives: return
+        
         #   Create components
         for component_type, component_class in [('R', Resistor), ('L', Inductor), ('C', Capacitor)]:
             num_component = 0

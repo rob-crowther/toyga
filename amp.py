@@ -86,7 +86,15 @@ class Circuit(object):
     max_attenuation_pass_band   = None
     min_attenuation_stop_band   = None
 
-    def __init__(self, num_r=None, num_l=None, num_c=None, num_parts=None, num_nodes=None, passives=None, next_part_id=None, next_node_id=None):
+    def __init__(self, 
+        num_r=None, 
+        num_l=None, 
+        num_c=None, 
+        num_parts=None, 
+        num_nodes=None, 
+        passives=None,
+        next_part_id=None,
+        next_node_id=None):
         self.num_r          = num_r if num_r else random.randint(1, 4)
         self.num_l          = num_l if num_l else random.randint(1, 4)
         self.num_c          = num_c if num_c else random.randint(1, 4)
@@ -144,8 +152,9 @@ class Circuit(object):
         return self.result
 
     def score(self):
-        print "\n\n"
         r = self.simulate()
+
+        print "\n"
 
         #   Didn't simulate
         if not r: return None
@@ -220,6 +229,7 @@ if __name__ == "__main__":
         #   Print out the remaining circuits
         print "\n\n"
         if the_scores:
+            print "Scores\n------\n"
             pp(the_scores)
         print "\n"
 
@@ -240,9 +250,8 @@ if __name__ == "__main__":
         #   Print the top score
         print "Top Score (generation %d): score: %s\n\n" % (the_generation, top_score[0])
         printing.print_circuit(top_score[1].circuit)
-        print "Maximum attenuation in the pass band (0-%g Hz) is %g dB" % top_score[1].max_attenuation_pass_band
+        print "\nMaximum attenuation in the pass band (0-%g Hz) is %g dB" % top_score[1].max_attenuation_pass_band
         print "Minimum attenuation in the stop band (%g Hz - Inf) is %g dB" % top_score[1].min_attenuation_stop_band
-        print "\n"
         the_generation += 1
 
         #   Good Enough answer found

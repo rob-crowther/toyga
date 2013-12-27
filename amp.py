@@ -201,6 +201,7 @@ class Circuit(object):
 if __name__ == "__main__":
     desired_score   = 20
     population_size = 10
+    top_n           = 3
     the_population  = [Circuit() for i in range(0, population_size)]
     the_generation  = 0
 
@@ -251,6 +252,6 @@ if __name__ == "__main__":
         #   Pause for humans to read post-generation results (Optional)
         time.sleep(5)
 
-        #   Keep up to the first 3 and generate up to 97 new ones
-        the_population =  [a_score[1] for a_score in the_scores[:3]]
+        #   Keep up to the first `top_n` and generate up to (`population_size` - `top_n`) new ones
+        the_population =  [a_score[1] for a_score in the_scores[:top_n]]
         the_population += [Circuit() for i in range(0, population_size - len(the_population))]

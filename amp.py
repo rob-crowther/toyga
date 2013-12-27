@@ -80,11 +80,11 @@ class Circuit(object):
     num_parts                   = None
     next_part_id                = None
     num_nodes                   = None
-    all_nodes                   = None
-    circuit                     = None
-    result                      = None
-    max_attenuation_pass_band   = None
-    min_attenuation_stop_band   = None
+    all_nodes                   = None  #   An enumeration of every node
+    circuit                     = None  #   An `akhab` circuit object
+    result                      = None  #   `akhab` simulation results dict
+    max_attenuation_pass_band   = None  #   Tuple of (pass band upper frequency, maximum attenuation)
+    min_attenuation_stop_band   = None  #   Tuple of (stop band lower frequency, minimum attenuation)
 
     def __init__(self, 
         num_r=None,         #   Number of resistors
@@ -95,6 +95,8 @@ class Circuit(object):
         passives=None,      #   List of passive parts
         next_part_id=None,  #   Next available part id
         next_node_id=None): #   Next available node id
+
+        #   Assign provided values or random defaults
         self.num_r          = num_r if num_r else random.randint(1, 4)
         self.num_l          = num_l if num_l else random.randint(1, 4)
         self.num_c          = num_c if num_c else random.randint(1, 4)
@@ -214,7 +216,7 @@ if __name__ == "__main__":
     the_population  = [Circuit() for i in range(0, population_size)]
     the_generation  = 0
 
-    #   Loop until greated than `desired_score` 
+    #   Loop until greater than `desired_score` 
     while True:
         the_scores = []
 

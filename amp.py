@@ -10,7 +10,7 @@ import math
 import time
 from pprint import pprint as pp
 
-debug = True
+debug = False
 
 the_weights = [
     -1.3,   #   Maximum attenuation in the pass band
@@ -73,16 +73,18 @@ class Capacitor(Component):
         8.2e-06]
 
 class Circuit(object):
-    passives        = None
-    num_r           = None
-    num_l           = None
-    num_c           = None
-    num_parts       = None
-    next_part_id    = None
-    num_nodes       = None
-    all_nodes       = None
-    circuit         = None
-    result          = None
+    passives                    = None
+    num_r                       = None
+    num_l                       = None
+    num_c                       = None
+    num_parts                   = None
+    next_part_id                = None
+    num_nodes                   = None
+    all_nodes                   = None
+    circuit                     = None
+    result                      = None
+    max_attenuation_pass_band   = None
+    min_attenuation_stop_band   = None
 
     def __init__(self, num_r=None, num_l=None, num_c=None, num_parts=None, num_nodes=None, passives=None, next_part_id=None, next_node_id=None):
         self.num_r          = num_r if num_r else random.randint(1, 4)
@@ -167,13 +169,13 @@ class Circuit(object):
             # call scipy to interpolate
             norm_out_db_interpolated = scipy.interpolate.interp1d(frequencies, norm_out_db)
             
-            max_attenuation_pass_band = (2e3, -1.0*norm_out_db_interpolated(2e3))
-            min_attenuation_stop_band = (6.5e3, -1.0*norm_out_db_interpolated(6.5e3))
+            self.max_attenuation_pass_band = (2e3, -1.0*norm_out_db_interpolated(2e3))
+            self.min_attenuation_stop_band = (6.5e3, -1.0*norm_out_db_interpolated(6.5e3))
             
             #   Eliminate unusable results
-            if (max_attenuation_pass_band[1] == -0) or math.isnan(max_attenuation_pass_band[1]):
+            if (self.max_attenuation_pass_band[1] == -0) or math.isnan(self.max_attenuation_pass_band[1]):
                 return None
-            if (min_attenuation_stop_band[1] == -0) or math.isnan(min_attenuation_stop_band[1]):
+            if (self.min_attenuation_stop_band[1] == -0) or math.isnan(self.min_attenuation_stop_band[1]):
                 return None
 
             if debug:
@@ -183,8 +185,8 @@ class Circuit(object):
 
             #   Form a draft of the final score
             a_score = [
-                max_attenuation_pass_band[1], 
-                min_attenuation_stop_band[1], 
+                self.max_attenuation_pass_band[1], 
+                self.min_attenuation_stop_band[1], 
                 self.num_nodes,
                 self.num_r,
                 self.num_l,
@@ -198,7 +200,7 @@ class Circuit(object):
 
 if __name__ == "__main__":
     desired_score   = 20
-    population_size = 100
+    population_size = 10
     the_population  = [Circuit() for i in range(0, population_size)]
     the_generation  = 0
 
@@ -225,24 +227,30 @@ if __name__ == "__main__":
 
         #   Take a mulligan
         except IndexError:
+            print "Generation %d: mulligan" % the_generation
+
+            #   Pause for humans to read post-generation results (Optional)
+            time.sleep(1)
+
+            the_generation += 1;
             the_population = [Circuit() for i in range(0, population_size)]
             continue
 
         #   Print the top score
         print "Top Score (generation %d): score: %s\n\n" % (the_generation, top_score[0])
         printing.print_circuit(top_score[1].circuit)
-        top_score[1].score()
+        print "Maximum attenuation in the pass band (0-%g Hz) is %g dB" % top_score[1].max_attenuation_pass_band
+        print "Minimum attenuation in the stop band (%g Hz - Inf) is %g dB" % top_score[1].min_attenuation_stop_band
+        print "\n"
         the_generation += 1
 
         #   Good Enough answer found
         if top_score[0] > desired_score:
             break
 
+        #   Pause for humans to read post-generation results (Optional)
+        time.sleep(5)
+
         #   Keep up to the first 3 and generate up to 97 new ones
         the_population =  [a_score[1] for a_score in the_scores[:3]]
         the_population += [Circuit() for i in range(0, population_size - len(the_population))]
-
-        print "\n"
-
-        #   Pause for humans to read post-generation results (Optional)
-        time.sleep(10)

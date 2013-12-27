@@ -87,14 +87,14 @@ class Circuit(object):
     min_attenuation_stop_band   = None
 
     def __init__(self, 
-        num_r=None, 
-        num_l=None, 
-        num_c=None, 
-        num_parts=None, 
-        num_nodes=None, 
-        passives=None,
-        next_part_id=None,
-        next_node_id=None):
+        num_r=None,         #   Number of resistors
+        num_l=None,         #   Number of inductors
+        num_c=None,         #   Number of capacitors
+        num_parts=None,     #   Number of passive parts in total
+        num_nodes=None,     #   Number of connection nodes
+        passives=None,      #   List of passive parts
+        next_part_id=None,  #   Next available part id
+        next_node_id=None): #   Next available node id
         self.num_r          = num_r if num_r else random.randint(1, 4)
         self.num_l          = num_l if num_l else random.randint(1, 4)
         self.num_c          = num_c if num_c else random.randint(1, 4)

@@ -12,15 +12,6 @@ from pprint import pprint as pp
 
 debug = False
 
-the_weights = [
-    -1.3,   #   Maximum attenuation in the pass band
-     1.0,   #   Minimum attenuation in the stop band
-    -0.2,   #   Number of nodes
-    -0.2,   #   Number of resistors
-    -0.2,   #   Number of inductors
-    -0.2    #   Number of capacitors
-]
-
 class Component(object):
     common      = list()
     value       = None
@@ -73,38 +64,49 @@ class Capacitor(Component):
         8.2e-06]
 
 class Circuit(object):
-    passives                    = None
-    num_r                       = None
-    num_l                       = None
-    num_c                       = None
-    num_parts                   = None
-    next_part_id                = None
-    num_nodes                   = None
-    all_nodes                   = None  #   An enumeration of every node
+    passives                    = None  #   List of passive parts
+    num_r                       = None  #   Number of resistors
+    num_l                       = None  #   Number of inductors
+    num_c                       = None  #   Number of capacitors
+    num_parts                   = None  #   Number of passive parts in total
+    next_part_id                = None  #   Next available part id
+    next_node_id                = None  #   Next available node id
+    num_nodes                   = None  #   Number of connection nodes
+    all_nodes                   = None  #   A list of every node
     circuit                     = None  #   An `akhab` circuit object
     result                      = None  #   `akhab` simulation results dict
     max_attenuation_pass_band   = None  #   Tuple of (pass band upper frequency, maximum attenuation)
     min_attenuation_stop_band   = None  #   Tuple of (stop band lower frequency, minimum attenuation)
+    weights                     = [
+        -1.3,   #   Maximum attenuation in the pass band
+         1.0,   #   Minimum attenuation in the stop band
+        -0.2,   #   Number of nodes
+        -0.2,   #   Number of resistors
+        -0.2,   #   Number of inductors
+        -0.2    #   Number of capacitors
+    ]
 
     def __init__(self, 
-        num_r=None,         #   Number of resistors
-        num_l=None,         #   Number of inductors
-        num_c=None,         #   Number of capacitors
-        num_parts=None,     #   Number of passive parts in total
-        num_nodes=None,     #   Number of connection nodes
-        passives=None,      #   List of passive parts
-        next_part_id=None,  #   Next available part id
-        next_node_id=None): #   Next available node id
+        num_r=None,         
+        num_l=None,         
+        num_c=None,         
+        num_parts=None,     
+        num_nodes=None,     
+        passives=None,      
+        next_part_id=None,  
+        next_node_id=None,
+        weights=None): 
 
         #   Assign provided values or random defaults
-        self.num_r          = num_r if num_r else random.randint(1, 4)
-        self.num_l          = num_l if num_l else random.randint(1, 4)
-        self.num_c          = num_c if num_c else random.randint(1, 4)
-        self.num_parts      = num_parts if num_parts else sum([self.num_r, self.num_l, self.num_c])
-        self.num_nodes      = num_nodes if num_nodes else sum([self.num_r, self.num_l, self.num_c])
-        self.passives       = passives if passives else list()
-        self.next_part_id   = next_part_id if next_part_id else 0
-        self.next_node_id   = next_node_id if next_node_id else 0
+        self.num_r                  = num_r if num_r else random.randint(1, 4)
+        self.num_l                  = num_l if num_l else random.randint(1, 4)
+        self.num_c                  = num_c if num_c else random.randint(1, 4)
+        self.num_parts              = num_parts if num_parts else sum([self.num_r, self.num_l, self.num_c])
+        self.num_nodes              = num_nodes if num_nodes else sum([self.num_r, self.num_l, self.num_c])
+        self.passives               = passives if passives else list()
+        self.next_part_id           = next_part_id if next_part_id else 0
+        self.next_node_id           = next_node_id if next_node_id else 0
+        if weights: self.weights    = weights
 
         #   Create a list of all the nodes to select from, emphasizing ground
         self.all_nodes = (['0'] * 3) + ["n%d" % i for i in range(1, self.num_nodes)]
@@ -128,7 +130,7 @@ class Circuit(object):
                 self.passives.append(a_part)
                 self.next_part_id += 1
 
-    #   Random correlation between parameters and simulation scores
+    #   Drive the `ahkab` circuit simulator
     def simulate(self):
         self.circuit = circuit.circuit(title='Untitled')
 
@@ -207,7 +209,7 @@ class Circuit(object):
                 self.num_c]
 
             #   Weight the draft versions of the final scores
-            return sum([a_weight * a_score for (a_weight, a_score) in zip(the_weights, a_score)])
+            return sum([a_weight * a_score for (a_weight, a_score) in zip(self.weights, a_score)])
         
         #   If ANYTHING goes wrong, we just mark the circuit as bad. Lazy. (Possibly bad. Probably bad.)
         except: return None

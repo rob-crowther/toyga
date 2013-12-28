@@ -130,8 +130,6 @@ class Circuit(object):
 
     #   Random correlation between parameters and simulation scores
     def simulate(self):
-        if self.result: return self.result
-
         self.circuit = circuit.circuit(title='Untitled')
 
         #   Create nodes

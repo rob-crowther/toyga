@@ -109,8 +109,9 @@ class Circuit(object):
         #   Create a list of all the nodes to select from, emphasizing ground
         self.all_nodes = (['0'] * 3) + ["n%d" % i for i in range(1, self.num_nodes)]
 
+        #   Return if passive components were provided
         if passives: return
-        
+
         #   Create components
         for component_type, component_class in [('R', Resistor), ('L', Inductor), ('C', Capacitor)]:
             num_component = 0
@@ -147,9 +148,11 @@ class Circuit(object):
             elif (i.part_id[0] == 'C'):
                 self.circuit.add_capacitor(i.part_id, i.ext_n1,  i.ext_n2, C=i.value)
 
+        #   Add a voltage source
         voltage_step = devices.pulse(v1=0, v2=1, td=500e-9, tr=1e-12, pw=1, tf=1e-12, per=2)
         self.circuit.add_vsource(name="V1", ext_n1='n1', ext_n2='0', vdc=5, vac=1, function=voltage_step)
 
+        #   Simulate the circuit with an AC analysis
         ac_analysis = ahkab.new_ac(start=1e3, stop=1e5, points=100)
         self.result = ahkab.run(self.circuit, an_list=[ac_analysis])
 

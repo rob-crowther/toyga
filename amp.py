@@ -14,11 +14,6 @@ from pprint import pprint as pp
 debug = False
 
 class Component(object):
-    value       = None
-    part_id     = None
-    ext_n1      = None
-    ext_n2      = None
-
     def __init__(self, value=None, part_id=None, ext_n1=None, ext_n2=None):
         self.value      = value if value else None
         self.part_id    = part_id if part_id else None
@@ -79,42 +74,31 @@ class Capacitor(Component):
         6.8e-10, 6.8e-09, 6.8e-08, 6.8e-07, 6.8e-06, 8.2e-11, 8.2e-10, 8.2e-09, 8.2e-08, 8.2e-07, 
         8.2e-06]
 
-class Circuit(list):
-    num_parts                   = None              #   Number of passive parts in total
-    next_part_id                = None              #   Next available part id
-    num_nodes                   = None              #   Number of connection nodes
-    outfile                     = 'ramdisk/sim.ac'  #   The filename for Ahkab's scratchpad
-    circuit                     = None              #   An Ahkab circuit object
-    max_attenuation_pass_band   = None              #   Tuple of (pass band upper frequency, maximum attenuation)
-    min_attenuation_stop_band   = None              #   Tuple of (stop band lower frequency, minimum attenuation)
-    weights                     = [
-        -1.3,   #   Maximum attenuation in the pass band
-         1.0,   #   Minimum attenuation in the stop band
-        -0.2,   #   Number of nodes
-        -0.2,   #   Number of parts
-    ]
-
-    def __init__(self,
-        title=None,          
-        num_parts=None,     
-        num_nodes=None,   
-        outfile=None,  
-        weights=None,
-        random=None): 
-
-        #   Assign provided values or random defaults
-        self.title                  = title if title else "Untitled"
-        self.num_parts              = num_parts if num_parts else 0
-        self.num_nodes              = num_nodes if num_nodes else 0
-        if outfile: self.outfile    = outfile 
-        if weights: self.weights    = weights
-        if random:  self.random()
+class Circuit(list):       
+    def __init__(self, title=None, num_parts=None, num_nodes=None, outfile=None, weights=None, random=None): 
+        self.title      = title if title else "Untitled"            #   Title of the circuit
+        self.num_parts  = num_parts if num_parts else 0             #   Number of passive parts in total
+        self.num_nodes  = num_nodes if num_nodes else 0             #   Number of connection nodes
+        self.outfile    = outfile if outfile else 'ramdisk/sim.ac'  #   The filename for Ahkab's scratchpad
+        self.weights    = weights if weights else [
+            -1.3,   #   Maximum attenuation in the pass band
+             1.0,   #   Minimum attenuation in the stop band
+            -0.2,   #   Number of nodes
+            -0.2,   #   Number of parts
+        ]
+        
+        circuit                     = None  #   An Ahkab circuit object
+        max_attenuation_pass_band   = None  #   Tuple of (pass band upper frequency, maximum attenuation)
+        min_attenuation_stop_band   = None  #   Tuple of (stop band lower frequency, minimum attenuation)
+        
+        #   Populate the `Circuit` with random `Component`s
+        if random: self.random()
 
     def random(self):
-        self.num_r      = random.randint(1, 4)
-        self.num_l      = random.randint(1, 4)
-        self.num_c      = random.randint(1, 4)
-        self.num_parts  = sum([self.num_r, self.num_l, self.num_c])
+        num_r           = random.randint(1, 4)
+        num_l           = random.randint(1, 4)
+        num_c           = random.randint(1, 4)
+        self.num_parts  = sum([num_r, num_l, num_c])
         self.num_nodes  = self.num_parts
         next_part_id    = 0
 
@@ -123,9 +107,9 @@ class Circuit(list):
 
         #   Create components
         for component_type, component_class, component_num in [
-            ('R', Resistor,    self.num_r),   
-            ('L', Inductor,    self.num_l),    
-            ('C', Capacitor,   self.num_c)]:
+            ('R', Resistor,     num_r),   
+            ('L', Inductor,     num_l),    
+            ('C', Capacitor,    num_c)]:
 
             for i in range(0, component_num):
                 a_part              = component_class()
@@ -223,10 +207,6 @@ class Circuit(list):
         return sum([a_weight * a_score for (a_weight, a_score) in zip(self.weights, a_score)])
 
 class Population(list):
-    population_size = None
-    top_n           = None
-    generation      = None
-
     def __init__(self, population=None, population_size=None, top_n=None, generation=None):
         self.population_size    = population_size if population_size    else 50
         self.top_n              = top_n if top_n                        else 3
@@ -276,7 +256,7 @@ class Population(list):
 if __name__ == "__main__":
     desired_score   = 5
     top_score       = None
-    a_population    = Population(population_size=10)
+    a_population    = Population()
 
     for (generation, scores) in a_population.simulate() :
         #   Print out the remaining circuits

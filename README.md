@@ -2,7 +2,7 @@ toyga
 =====
 
 This was originally posted as an entry on 
-[longchute](https://longchute.herokuapp.com/2013/12/27/toy-genetic-algorithm-part-2/). It uses the
+[longchute](https://longchute.heroku.com/2013/12/27/toy-genetic-algorithm-part-2/). It uses the
 `simulate` function of a `Circuit` to drive a circuit simulator 
 ([Ahkab](https://ahkab.github.com/ahkab/)) with a `Population` of random `Circuit`s made of random 
 `Component`s (`Resistor`, `Inductor`. and `Capacitor`) representing low-pass filters. It runs an 
@@ -47,7 +47,7 @@ increase the simulation verbosity and include mutation and recombination details
  This is tested on Python 2.7.6 with 
  [Ahkab fbd9777e7a](https://github.com/ahkab/ahkab/commit/fbd9777e7ad1a8afbdef18d68c2b2be827d61a8c), SciPy 0.12.1, NumPy 1.7.1, and SymPy 0.7.2. 
 
-**Usage**: `./filter.py`
+**Usage**: `./toyga.py`
 
 **Sample Output**:
 

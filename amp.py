@@ -244,7 +244,7 @@ class Circuit(list):
         #   Eliminate unusable results
         if (self.max_attenuation_pass_band[1] == -0) or math.isnan(self.max_attenuation_pass_band[1]):
             return None
-        if (self.min_attenuation_stop_band[1] < 1.0) or math.isnan(self.min_attenuation_stop_band[1]):
+        if (self.min_attenuation_stop_band[1] < 5.0) or math.isnan(self.min_attenuation_stop_band[1]):
             return None
 
         if debug:

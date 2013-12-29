@@ -244,7 +244,7 @@ class Circuit(list):
         #   Eliminate unusable results
         if (self.max_attenuation_pass_band[1] == -0) or math.isnan(self.max_attenuation_pass_band[1]):
             return None
-        if (self.min_attenuation_stop_band[1] == -0) or math.isnan(self.min_attenuation_stop_band[1]):
+        if (self.min_attenuation_stop_band[1] < 1.0) or math.isnan(self.min_attenuation_stop_band[1]):
             return None
 
         if debug:
@@ -366,60 +366,79 @@ class Population(list):
             self += new_population
 
 if __name__ == "__main__":
-    desired_score   = 100
+    desired_score   = 1000
     top_score       = None
-    a_population    = Population()
-    pre_seed        = False
+    a_population    = Population(population_size=100, top_n=3)
+    pre_seed        = True
 
     if pre_seed:
-        #   Create a seed circuit (discovered by this GA and saved)
+        #   Create a seed circuit
         a_circuit = Circuit()
-        a_circuit.component_types['R'][2] = 7
-        a_circuit.component_types['L'][2] = 4
-        a_circuit.component_types['C'][2] = 4
+        a_circuit.component_types['R'][2] = 5
+        a_circuit.component_types['L'][2] = 5
+        a_circuit.component_types['C'][2] = 7
         a_circuit += [
-            Resistor(   part_id='R0',   ext_n1='0',     ext_n2='n8',    value=130000),
-            Resistor(   part_id='R1',   ext_n1='n3',    ext_n2='n1',    value=510),
-            Resistor(   part_id='R2',   ext_n1='0',     ext_n2='n1',    value=100000),
-            Resistor(   part_id='R3',   ext_n1='0',     ext_n2='n4',    value=100000),
-            Resistor(   part_id='R4',   ext_n1='n5',    ext_n2='0',     value=300),
-            Resistor(   part_id='R5',   ext_n1='n2',    ext_n2='n3',    value=330),
-            Resistor(   part_id='R6',   ext_n1='n8',    ext_n2='n6',    value=160),
-            Inductor(   part_id='L0',   ext_n1='n8',    ext_n2='n5',    value=6.2e-08),
-            Inductor(   part_id='L1',   ext_n1='n4',    ext_n2='n6',    value=3.3e-07),
-            Inductor(   part_id='L2',   ext_n1='n1',    ext_n2='n3',    value=1.3e-08),
-            Inductor(   part_id='L3',   ext_n1='0',     ext_n2='0',     value=1.3e-07),
-            Capacitor(  part_id='C0',   ext_n1='0',     ext_n2='n4',    value=5.6e-09),
-            Capacitor(  part_id='C1',   ext_n1='n2',    ext_n2='n7',    value=8.2e-08),
-            Capacitor(  part_id='C2',   ext_n1='n7',    ext_n2='n5',    value=6.8e-06),
-            Capacitor(  part_id='C3',   ext_n1='n6',    ext_n2='0',     value=3.9e-07)
+            Resistor(   part_id='R0',   ext_n1='n5',    ext_n2='n3',    value=62000000),
+            Resistor(   part_id='R1',   ext_n1='n4',    ext_n2='n5',    value=620000),
+            Resistor(   part_id='R2',   ext_n1='n3',    ext_n2='n4',    value=680000),
+            Resistor(   part_id='R3',   ext_n1='n2',    ext_n2='n6',    value=22),
+            Resistor(   part_id='R4',   ext_n1='n6',    ext_n2='n1',    value=15),
+            Inductor(   part_id='L0',   ext_n1='n7',    ext_n2='n7',    value=1.6e-06),
+            Inductor(   part_id='L1',   ext_n1='n7',    ext_n2='n7',    value=9.1e-06),
+            Inductor(   part_id='L2',   ext_n1='0',     ext_n2='n1',    value=3e-09),
+            Inductor(   part_id='L3',   ext_n1='0',     ext_n2='n7',    value=3e-05),
+            Inductor(   part_id='L4',   ext_n1='0',     ext_n2='0',     value=1e-09),
+            Capacitor(  part_id='C0',   ext_n1='n7',    ext_n2='n2',    value=1.5e-09),
+            Capacitor(  part_id='C1',   ext_n1='0',     ext_n2='n6',    value=5.6e-07),
+            Capacitor(  part_id='C2',   ext_n1='0',     ext_n2='n3',    value=3.3e-10),
+            Capacitor(  part_id='C3',   ext_n1='n6',    ext_n2='0',     value=2.7e-07),
+            Capacitor(  part_id='C4',   ext_n1='n5',    ext_n2='n1',    value=6.8e-11),
+            Capacitor(  part_id='C5',   ext_n1='n7',    ext_n2='n7',    value=2.2e-08),
+            Capacitor(  part_id='C6',   ext_n1='0',     ext_n2='n4',    value=6.8e-09)
         ]
 
         #   Append the seed circuit to the population
         a_population.append(a_circuit)
         a_population.population_size += 1
 
-        #   Create a second seed circuit
-        a_circuit = Circuit()
-        a_circuit.component_types['R'][2] = 4
-        a_circuit.component_types['L'][2] = 3
-        a_circuit.component_types['C'][2] = 3
-        a_circuit += [
-            Resistor(   part_id='R0',   ext_n1='0',     ext_n2='n4',    value=100000),
-            Resistor(   part_id='R1',   ext_n1='n5',    ext_n2='0',     value=300),
-            Resistor(   part_id='R2',   ext_n1='n2',    ext_n2='n3',    value=330),
-            Resistor(   part_id='R3',   ext_n1='n8',    ext_n2='n6',    value=160),
-            Inductor(   part_id='L0',   ext_n1='n8',    ext_n2='n5',    value=6.2e-08),
-            Inductor(   part_id='L1',   ext_n1='n4',    ext_n2='n6',    value=3.3e-07),
-            Inductor(   part_id='L2',   ext_n1='n1',    ext_n2='n3',    value=1.3e-08),
-            Capacitor(  part_id='C0',   ext_n1='n2',    ext_n2='n7',    value=8.2e-08),
-            Capacitor(  part_id='C1',   ext_n1='n7',    ext_n2='n5',    value=6.8e-06),
-            Capacitor(  part_id='C2',   ext_n1='n6',    ext_n2='0',     value=3.9e-07)
-        ]
+        #   Create a seed circuit
+        #a_circuit = Circuit()
+        #a_circuit.component_types['R'][2] = 3
+        #a_circuit.component_types['L'][2] = 1
+        #a_circuit.component_types['C'][2] = 1
+        #a_circuit += [
+        #    Resistor(   part_id='R2',   ext_n1='n6',    ext_n2='n4',    value=47000000),
+        #    Resistor(   part_id='R3',   ext_n1='n1',    ext_n2='n6',    value=540),
+        #    Resistor(   part_id='R6',   ext_n1='0',     ext_n2='0',     value=330),
+        #    Inductor(   part_id='L3',   ext_n1='n5',    ext_n2='0',     value=6e-09),
+        #    Capacitor(  part_id='C3',   ext_n1='n6',    ext_n2='n5',    value=1.2e-07)
+        #]
 
-        #   Append the seed circuit to the population
-        a_population.append(a_circuit)
-        a_population.population_size += 1
+        ##   Append the seed circuit to the population
+        #a_population.append(a_circuit)
+        #a_population.population_size += 1
+        
+        ##   Create a second seed circuit
+        #a_circuit = Circuit()
+        #a_circuit.component_types['R'][2] = 4
+        #a_circuit.component_types['L'][2] = 3
+        #a_circuit.component_types['C'][2] = 3
+        #a_circuit += [
+        #    Resistor(   part_id='R0',   ext_n1='0',     ext_n2='n4',    value=100000),
+        #    Resistor(   part_id='R1',   ext_n1='n5',    ext_n2='0',     value=300),
+        #    Resistor(   part_id='R2',   ext_n1='n2',    ext_n2='n3',    value=330),
+        #    Resistor(   part_id='R3',   ext_n1='n8',    ext_n2='n6',    value=160),
+        #    Inductor(   part_id='L0',   ext_n1='n8',    ext_n2='n5',    value=6.2e-08),
+        #    Inductor(   part_id='L1',   ext_n1='n4',    ext_n2='n6',    value=3.3e-07),
+        #    Inductor(   part_id='L2',   ext_n1='n1',    ext_n2='n3',    value=1.3e-08),
+        #    Capacitor(  part_id='C0',   ext_n1='n2',    ext_n2='n7',    value=8.2e-08),
+        #    Capacitor(  part_id='C1',   ext_n1='n7',    ext_n2='n5',    value=6.8e-06),
+        #    Capacitor(  part_id='C2',   ext_n1='n6',    ext_n2='0',     value=3.9e-07)
+        #]
+
+        ##   Append the seed circuit to the population
+        #a_population.append(a_circuit)
+        #a_population.population_size += 1
 
     for (generation, scores) in a_population.simulate() :
         #   Print out the remaining circuits

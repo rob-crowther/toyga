@@ -13,6 +13,9 @@ from pprint import pprint as pp
 
 debug = False
 
+if debug:
+    print "Using `ahkab` %s" % ahkab.ahkab.__version__
+
 class Component(object):
     def __init__(self, value=None, part_id=None, ext_n1=None, ext_n2=None):
         self.value      = value
@@ -244,7 +247,7 @@ class Circuit(list):
         #   Eliminate unusable results
         if (self.max_attenuation_pass_band[1] == -0) or math.isnan(self.max_attenuation_pass_band[1]):
             return None
-        if (self.min_attenuation_stop_band[1] < 5.0) or math.isnan(self.min_attenuation_stop_band[1]):
+        if (self.min_attenuation_stop_band[1] < 15.0) or math.isnan(self.min_attenuation_stop_band[1]):
             return None
 
         if debug:
@@ -369,7 +372,7 @@ if __name__ == "__main__":
     desired_score   = 1000
     top_score       = None
     a_population    = Population(population_size=100, top_n=3)
-    pre_seed        = True
+    pre_seed        = False
 
     if pre_seed:
         #   Create a seed circuit

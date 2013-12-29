@@ -1,0 +1,153 @@
+C0 0 n4 2.7e-09
+R0 n4 n5 620000
+C2 n5 n1 6.8e-11
+L0 n7 n7 1.6e-06
+C3 0 n3 3.3e-10
+R2 n4 n5 620000
+R3 n6 n1 15
+R4 n3 n4 680000
+R5 n3 n4 680000
+
+L0 n7 0 6.2e-06
+R0 n1 n6 220000
+R1 n6 n5 75
+R2 0 n6 12
+C0 n2 0 4.7e-06
+R3 n3 n4 3300
+C1 n2 0 1.5e-06
+C2 n3 n7 1.8e-11
+L1 n3 n5 1.1e-08
+C3 n2 n5 4.7e-07
+C4 n4 0 4.7e-08
+R4 n7 n1 1800000
+R5 n1 0 13
+C5 0 0 1.8e-06
+C6 n6 n7 3.9e-06
+L2 n1 0 1.1e-07
+C7 n1 n6 3.3e-07
+R6 n7 n5 91000
+R7 0 0 2400000
+Maximum attenuation in the pass band (0-2000 Hz) is 0.34195 dB
+Minimum attenuation in the stop band (6500 Hz - Inf) is 9.17626 dB
+
+C0 n1 n6 3.3e-07
+R0 0 n6 12
+C1 n2 0 1.5e-06
+C2 n2 n5 4.7e-07
+C3 n4 0 4.7e-08
+R1 n6 n5 75
+R2 n3 n4 3300
+L0 n3 n5 4.3e-05
+R3 n3 n4 2200
+R4 n3 n4 3300
+C5 n6 n7 3.9e-06
+C6 n4 0 4.7e-08
+R5 n1 n6 220000
+L1 n7 0 6.2e-06
+Maximum attenuation in the pass band (0-2000 Hz) is 0.00313413 dB
+Minimum attenuation in the stop band (6500 Hz - Inf) is 6.70265 dB
+
+C0 n1 n6 3.3e-07
+R0 0 n6 12
+C1 n2 0 1.5e-06
+C2 n2 n5 4.7e-07
+C3 n4 0 4.7e-08
+R1 n6 n5 75
+R2 n3 n4 3300
+L0 n3 n5 4.3e-05
+R3 n3 n4 2200
+R4 0 n4 3300
+C5 n6 n7 3.9e-06
+C6 n4 0 4.7e-08
+L1 n7 0 6.8e-05
+L2 0 0 3e-07
+V1 n1 0 type=vdc vdc=5 vac=1 arg=0 type=pulse v1=0 v2=1 td=5e-07 per=2 tr=1e-12 tf=1e-12 pw=1
+(models and analysis directives are omitted)
+log((MASB / MAPB), 10) = 3.214618
+Maximum attenuation in the pass band (0-2000 Hz) is 0.00632761 dB
+Minimum attenuation in the stop band (6500 Hz - Inf) is 10.3719 dB
+
+Top Score (generation 122): 245.423497178
+
+* TITLE: Untitled
+L0 0 0 3e-07
+L1 n3 n5 8.2e-06
+L2 n7 0 6.8e-05
+R0 n3 n4 2200
+C0 n2 n5 4.7e-07
+R1 n6 n5 75
+C1 n4 0 4.7e-08
+C2 n6 n7 3.9e-06
+C3 n2 0 1.5e-06
+R2 0 n4 3300
+C4 n1 n6 1.8e-09
+C5 n6 n7 3.9e-06
+C6 n2 n5 4.7e-07
+R3 0 n6 12
+V1 n1 0 type=vdc vdc=5 vac=1 arg=0 type=pulse v1=0 v2=1 td=5e-07 per=2 tr=1e-12 tf=1e-12 pw=1
+(models and analysis directives are omitted)
+log((MASB / MAPB), 10) = 1.893841
+Maximum attenuation in the pass band (0-2000 Hz) is 0.356021 dB
+Minimum attenuation in the stop band (6500 Hz - Inf) is 27.8815 dB
+
+* TITLE: Untitled
+L1 n3 n5 5.6e-07
+L2 n7 0 6.8e-05
+R0 n3 n4 110000
+R1 n6 n5 75
+C1 n4 0 4.7e-08
+C2 n6 n7 3.9e-06
+C3 n2 0 1.5e-06
+R2 0 n4 750
+C4 n1 n6 1.8e-09
+C5 n6 n7 3.9e-06
+C6 n2 n5 4.7e-07
+R3 0 n6 12
+V1 n1 0 type=vdc vdc=5 vac=1 arg=0 type=pulse v1=0 v2=1 td=5e-07 per=2 tr=1e-12 tf=1e-12 pw=1
+(models and analysis directives are omitted)
+log((MASB / MAPB), 10) = 3.866715
+Maximum attenuation in the pass band (0-2000 Hz) is 0.00314072 dB
+Minimum attenuation in the stop band (6500 Hz - Inf) is 23.107 dB
+
+Top Score (generation 135): 521.323953735
+
+
+* TITLE: Untitled
+L1 n3 n5 5.6e-07
+L2 n7 0 6.8e-05
+R0 n3 n4 110000
+R1 n6 n5 75
+C1 n4 0 4.7e-08
+C2 n6 n7 4.7e-06
+C3 n2 0 1.5e-06
+R2 0 n4 750
+C4 n1 n6 1.8e-09
+C5 n6 n7 3.9e-06
+C6 n2 n5 4.7e-07
+R3 0 n6 12
+V1 n1 0 type=vdc vdc=5 vac=1 arg=0 type=pulse v1=0 v2=1 td=5e-07 per=2 tr=1e-12 tf=1e-12 pw=1
+(models and analysis directives are omitted)
+log((MASB / MAPB), 10) = 3.320801
+Maximum attenuation in the pass band (0-2000 Hz) is 0.0245837 dB
+Minimum attenuation in the stop band (6500 Hz - Inf) is 51.4574 dB
+
+Top Score (generation 208): 526.740519084
+
+
+* TITLE: Untitled
+L1 n3 n5 6.8e-05
+L2 n7 0 6.8e-05
+R0 n3 n4 160000
+R1 n6 n5 75
+C1 n4 0 4.7e-08
+C2 n6 n7 4.7e-06
+R2 0 n4 750
+C4 n1 n6 3.3e-10
+C5 n6 n7 3.9e-06
+C6 0 n5 5.6e-07
+R3 0 n6 12
+V1 n1 0 type=vdc vdc=5 vac=1 arg=0 type=pulse v1=0 v2=1 td=5e-07 per=2 tr=1e-12 tf=1e-12 pw=1
+(models and analysis directives are omitted)
+log((MASB / MAPB), 10) = 2.663431
+Maximum attenuation in the pass band (0-2000 Hz) is 0.11584 dB
+Minimum attenuation in the stop band (6500 Hz - Inf) is 53.369 dB

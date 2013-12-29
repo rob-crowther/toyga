@@ -15,10 +15,10 @@ debug = False
 
 class Component(object):
     def __init__(self, value=None, part_id=None, ext_n1=None, ext_n2=None):
-        self.value      = value if value else None
-        self.part_id    = part_id if part_id else None
-        self.ext_n1     = ext_n1 if ext_n1 else None
-        self.ext_n2     = ext_n2 if ext_n2 else None
+        self.value      = value
+        self.part_id    = part_id
+        self.ext_n1     = ext_n1
+        self.ext_n2     = ext_n2
 
     def __repr__(self):
         return '<%s.%s object at %s> %s %s %s %s' % (
@@ -75,61 +75,60 @@ class Capacitor(Component):
         8.2e-06]
 
 class Circuit(list):       
-    def __init__(self, title=None, num_parts=None, num_nodes=None, outfile=None, weights=None, random=None): 
-        self.title      = title if title else "Untitled"            #   Title of the circuit
-        self.num_parts  = num_parts if num_parts else 0             #   Number of passive parts in total
-        self.num_nodes  = num_nodes if num_nodes else 0             #   Number of connection nodes
-        self.outfile    = outfile if outfile else 'ramdisk/sim.ac'  #   The filename for Ahkab's scratchpad
+    def __init__(self, title="Untitled", num_parts=0, num_nodes=0, outfile='ramdisk/sim.ac', weights=None, random=None): 
+        self.title      = title         #   Title of the circuit
+        self.num_parts  = num_parts     #   Number of passive parts in total
+        self.num_nodes  = num_nodes     #   Number of connection nodes
+        self.outfile    = outfile       #   The filename for Ahkab's scratchpad
         self.weights    = weights if weights else [
             -1.3,   #   Maximum attenuation in the pass band
              1.0,   #   Minimum attenuation in the stop band
             -0.2,   #   Number of nodes
-            -0.2,   #   Number of parts
+            -0.2    #   Number of parts
         ]
         
-        circuit                     = None  #   An Ahkab circuit object
-        max_attenuation_pass_band   = None  #   Tuple of (pass band upper frequency, maximum attenuation)
-        min_attenuation_stop_band   = None  #   Tuple of (stop band lower frequency, minimum attenuation)
+        self.circuit                    = None  #   An Ahkab circuit object
+        self.max_attenuation_pass_band  = None  #   Tuple of (pass band upper frequency, maximum attenuation)
+        self.min_attenuation_stop_band  = None  #   Tuple of (stop band lower frequency, minimum attenuation)
         
         #   Populate the `Circuit` with random `Component`s
         if random: self.random()
 
     def random(self):
-        num_r           = random.randint(1, 4)
-        num_l           = random.randint(1, 4)
-        num_c           = random.randint(1, 4)
-        self.num_parts  = sum([num_r, num_l, num_c])
+        self.num_parts  = random.randint(4, 12)
         self.num_nodes  = self.num_parts
-        next_part_id    = 0
+
+        #   Component type (first letter of `part_id`) and class
+        component_choices = [
+            ('R', Resistor),   
+            ('L', Inductor),    
+            ('C', Capacitor)]
 
         #   Create a list of all the nodes to select from, emphasizing ground
         all_nodes = (['0'] * 3) + ["n%d" % i for i in range(1, self.num_nodes)]
 
-        #   Create components
-        for component_type, component_class, component_num in [
-            ('R', Resistor,     num_r),   
-            ('L', Inductor,     num_l),    
-            ('C', Capacitor,    num_c)]:
+        #   Counters for assigning next `part_id` per component type
+        count = {'R': 0, 'L': 0, 'C': 0}
 
-            for i in range(0, component_num):
-                a_part              = component_class()
-                a_part.value        = random.choice(a_part.common)
-                a_part.part_id      = "%s%d" % (component_type, next_part_id)
-                a_part.ext_n1       = random.choice(all_nodes)
-                a_part.ext_n2       = random.choice(all_nodes)
-                self.append(a_part)
-                next_part_id += 1
+        #   Create random components
+        for i in range(0, self.num_parts):
+            a_type, a_class = random.choice(component_choices)
+            a_part          = a_class()
+            a_part.value    = random.choice(a_part.common)
+            a_part.part_id  = "%s%d" % (a_type, count[a_type])
+            a_part.ext_n1   = random.choice(all_nodes)
+            a_part.ext_n2   = random.choice(all_nodes)
+            self.append(a_part)
+            count[a_type] += 1
 
     #   Drive the Ahkab circuit simulator
     def simulate(self):
         #   Build a copy of the circuit for Ahkab
         self.circuit = circuit.circuit(title=self.title)
-        next_node_id = 0
 
         #   Create nodes
         for i in range(0, self.num_nodes):
-            self.circuit.create_node("n%d" % next_node_id)
-            next_node_id += 1
+            self.circuit.create_node("n%d" % i)
         
         #   Table of functions to add specific component types
         #   Indexed by first letter of `part_id`
@@ -207,10 +206,10 @@ class Circuit(list):
         return sum([a_weight * a_score for (a_weight, a_score) in zip(self.weights, a_score)])
 
 class Population(list):
-    def __init__(self, population=None, population_size=None, top_n=None, generation=None):
-        self.population_size    = population_size if population_size    else 50
-        self.top_n              = top_n if top_n                        else 3
-        self.generation         = generation if generation              else 0
+    def __init__(self, population=None, population_size=50, top_n=3, generation=0):
+        self.population_size    = population_size
+        self.top_n              = top_n
+        self.generation         = generation
 
         self.repopulate(population=population, population_size=self.population_size)
 
@@ -256,7 +255,7 @@ class Population(list):
 if __name__ == "__main__":
     desired_score   = 5
     top_score       = None
-    a_population    = Population()
+    a_population    = Population(population_size=10)
 
     for (generation, scores) in a_population.simulate() :
         #   Print out the remaining circuits

@@ -80,10 +80,10 @@ class Circuit(list):
         self.num_nodes  = num_nodes     #   Number of connection nodes
         self.outfile    = outfile       #   The filename for Ahkab's scratchpad
         self.weights    = weights if weights else [
-            -1.3,   #   Maximum attenuation in the pass band
+            -1.0,   #   Maximum attenuation in the pass band
              1.0,   #   Minimum attenuation in the stop band
-            -0.2,   #   Number of nodes
-            -0.2    #   Number of parts
+            -1.0,   #   Number of nodes
+            -1.0    #   Number of parts
         ]
         
         self.circuit                    = None  #   An Ahkab circuit object
@@ -104,7 +104,7 @@ class Circuit(list):
     def random(self):
         self.num_nodes = random.randint(4, 8)
 
-        for i in range(0, random.randint(4, 8)):
+        for i in range(0, random.randint(1, 20)):
             #   Make sure to append to self (a `Circuit`) instead of overwriting with a basic `list`
             self.append(self.random_part())
             
@@ -130,16 +130,16 @@ class Circuit(list):
     def mutate(self):
         mutation = random.randint(0, 1000)
 
-        if debug and (mutation < 800):
+        if debug:
             print "Mutating (from):"
             pp(self)
 
         if  mutation < 200:     self.mutate_delete()
         elif mutation < 400:    self.mutate_add()
-        elif mutation < 600:    self.mutate_value()
-        elif mutation < 800:    self.mutate_node()
+        elif mutation < 800:    self.mutate_value()
+        elif mutation < 900:    self.mutate_node()
 
-        if debug and (mutation < 800):
+        if debug:
             print "Mutating (to):"
             pp(self)
             print "\n"
@@ -303,11 +303,11 @@ class Population(list):
             yield (self.generation, scores)
             self.generation += 1
 
-            #   Keep up to the `top_n`, keep up to the first `top_n * 4` and mutate them, and regenerate the rest
-            new_population      = [a_score[1] for a_score in scores[:self.top_n]]
-            mutated_population  = [copy.deepcopy(a_score[1]) for a_score in scores[:self.top_n*4]]
-            for a_member in mutated_population:
-                a_member.mutate()
+            #   Keep the best one, copy and mutate up to the top_n`, and regenerate the rest
+            new_population      = [scores[0][1]]
+            mutated_population  = [copy.deepcopy(scores[0][1]) for i in range(0, 4)] + \
+                                  [copy.deepcopy(a_score[1]) for a_score in scores[:self.top_n]]
+            for a_member in mutated_population: a_member.mutate()
             new_population += mutated_population
             new_population += [Circuit(random=True) for i in range(0, self.population_size - len(new_population))]
 
@@ -316,9 +316,9 @@ class Population(list):
             self += new_population
 
 if __name__ == "__main__":
-    desired_score   = 15
+    desired_score   = 25
     top_score       = None
-    a_population    = Population()
+    a_population    = Population(population_size=10, top_n=3)
 
     for (generation, scores) in a_population.simulate() :
         #   Print out the remaining circuits

@@ -3,12 +3,12 @@
 import random
 import ahkab
 from ahkab import circuit, printing, devices
-import tempfile
 import scipy
 import scipy.interpolate
 import numpy
 import math
 import time
+import copy
 from pprint import pprint as pp
 
 debug = False
@@ -75,9 +75,8 @@ class Capacitor(Component):
         8.2e-06]
 
 class Circuit(list):       
-    def __init__(self, title="Untitled", num_parts=0, num_nodes=0, outfile='ramdisk/sim.ac', weights=None, random=None): 
+    def __init__(self, title="Untitled", num_nodes=0, outfile='ramdisk/sim.ac', weights=None, random=None):
         self.title      = title         #   Title of the circuit
-        self.num_parts  = num_parts     #   Number of passive parts in total
         self.num_nodes  = num_nodes     #   Number of connection nodes
         self.outfile    = outfile       #   The filename for Ahkab's scratchpad
         self.weights    = weights if weights else [
@@ -90,35 +89,98 @@ class Circuit(list):
         self.circuit                    = None  #   An Ahkab circuit object
         self.max_attenuation_pass_band  = None  #   Tuple of (pass band upper frequency, maximum attenuation)
         self.min_attenuation_stop_band  = None  #   Tuple of (stop band lower frequency, minimum attenuation)
-        
+
+        #   Table of `Component` types to lists of [subclass, init method for Ahkab, subclass count]
+        self.component_types = {     
+            'R': [Resistor,     'add_resistor',     0],   
+            'L': [Inductor,     'add_inductor',     0],    
+            'C': [Capacitor,    'add_capacitor',    0]
+        }
+
         #   Populate the `Circuit` with random `Component`s
         if random: self.random()
 
+    #   Creates many random `Component`s
     def random(self):
-        self.num_parts  = random.randint(4, 12)
-        self.num_nodes  = self.num_parts
+        self.num_nodes = random.randint(4, 8)
 
-        #   Component type (first letter of `part_id`): (class, count)
-        component_choices = {
-            'R': [Resistor,     0],   
-            'L': [Inductor,     0],    
-            'C': [Capacitor,    0]
-        }
+        for i in range(0, random.randint(4, 8)):
+            #   Make sure to append to self (a `Circuit`) instead of overwriting with a basic `list`
+            self.append(self.random_part())
+            
+    #    Creates a random `Component`
+    def random_part(self):
+        #   Create a list of all the nodes to select from, emphasizing ground
+        all_nodes = (['0'] * 3) + ["n%d" % i for i in range(1, self.num_nodes)]
+
+        a_type                  = random.choice(self.component_types.keys())
+        a_class, an_init, an_id = self.component_types[a_type]
+        a_part                  = a_class()
+        a_part.value            = random.choice(a_part.common)
+        a_part.part_id          = "%s%d" % (a_type, an_id)
+        a_part.ext_n1           = random.choice(all_nodes)
+        a_part.ext_n2           = random.choice(all_nodes)
+
+        #   Increment per-subclass counter (for next `an_id`)
+        self.component_types[a_type][2] += 1
+
+        return a_part
+
+    #   Mutations to fine-tune the `top_n` solutions
+    def mutate(self):
+        mutation = random.randint(0, 1000)
+
+        if debug and (mutation < 800):
+            print "Mutating (from):"
+            pp(self)
+
+        if  mutation < 200:     self.mutate_delete()
+        elif mutation < 400:    self.mutate_add()
+        elif mutation < 600:    self.mutate_value()
+        elif mutation < 800:    self.mutate_node()
+
+        if debug and (mutation < 800):
+            print "Mutating (to):"
+            pp(self)
+            print "\n"
+
+    #   Deletes a `Component`
+    def mutate_delete(self):
+        if debug:
+            print "Mutate 'delete'"
+
+        del self[random.randint(0, len(self)-1)]
+
+    #   Adds a `Component`
+    def mutate_add(self):
+        if debug:
+            print "Mutate 'add'"
+
+        self.append(self.random_part())
+
+    #   Selects a new `value` for a random `Component`
+    def mutate_value(self):
+        if debug:
+            print "Mutate 'value'"
+
+        a_part          = self[random.randint(0, len(self)-1)]
+        a_part.value    = random.choice(a_part.common)
+
+    def mutate_node(self):
+        if debug:
+            print "Mutate 'node'"
 
         #   Create a list of all the nodes to select from, emphasizing ground
         all_nodes = (['0'] * 3) + ["n%d" % i for i in range(1, self.num_nodes)]
 
-        #   Create random components
-        for i in range(0, self.num_parts):
-            a_type          = random.choice(component_choices.keys())
-            a_class, an_id  = component_choices[a_type]
-            a_part          = a_class()
-            a_part.value    = random.choice(a_part.common)
-            a_part.part_id  = "%s%d" % (a_type, an_id)
-            a_part.ext_n1   = random.choice(all_nodes)
-            a_part.ext_n2   = random.choice(all_nodes)
-            self.append(a_part)
-            component_choices[a_type][1] += 1
+        #   Choose a random `Component`
+        a_part = self[random.randint(0, len(self)-1)]
+
+        #   Choose a random connection node to swap
+        if random.randint(0, 1):
+            a_part.ext_n1 = random.choice(all_nodes)
+        else:
+            a_part.ext_n2 = random.choice(all_nodes)
 
     #   Drive the Ahkab circuit simulator
     def simulate(self):
@@ -128,22 +190,15 @@ class Circuit(list):
         #   Create nodes
         for i in range(0, self.num_nodes):
             self.circuit.create_node("n%d" % i)
-        
-        #   Table of functions to add specific component types
-        #   Indexed by first letter of `part_id`
-        add_part = {
-            'R':    self.circuit.add_resistor,
-            'L':    self.circuit.add_inductor,
-            'C':    self.circuit.add_capacitor
-        }
 
         #   Create passive components
         for i in self:
-            add_part[i.part_id[0]](
+            #   Call the init method of the current component type
+            getattr(self.circuit, self.component_types[i.part_id[0]][1])(
                 i.part_id, 
                 i.ext_n1,
                 i.ext_n2,
-                **{i.part_id[0]: i.value})  #   Create 'R', 'L', or 'C' kwarg for `self.circuit.add_[...]`
+                **{i.part_id[0]: i.value})  #   Create 'R', 'L', or 'C' kwarg for `self.circuit.add_*`
 
         #   Add a voltage source
         voltage_step = devices.pulse(v1=0, v2=1, td=500e-9, tr=1e-12, pw=1, tf=1e-12, per=2)
@@ -192,20 +247,20 @@ class Circuit(list):
         if debug:
             printing.print_circuit(self.circuit)
             print "Maximum attenuation in the pass band (0-%g Hz) is %g dB" % self.max_attenuation_pass_band
-            print "Minimum attenuation in the stop band (%g Hz - Inf) is %g dB" % self.min_attenuation_stop_band
+            print "Minimum attenuation in the stop band (%g Hz - Inf) is %g dB\n" % self.min_attenuation_stop_band
 
         #   Form a draft of the final score
         a_score = [
             self.max_attenuation_pass_band[1], 
             self.min_attenuation_stop_band[1], 
             self.num_nodes,
-            self.num_parts]
+            len(self)]
 
         #   Weight the draft version of the final score
         return sum([a_weight * a_score for (a_weight, a_score) in zip(self.weights, a_score)])
 
 class Population(list):
-    def __init__(self, population=None, population_size=50, top_n=3, generation=0):
+    def __init__(self, population=None, population_size=50, top_n=5, generation=0):
         self.population_size    = population_size
         self.top_n              = top_n
         self.generation         = generation
@@ -213,8 +268,10 @@ class Population(list):
         self.repopulate(population=population, population_size=self.population_size)
 
     def repopulate(self, population=None, population_size=None):
-        del self[:]
         if population_size: self.population_size = population_size
+
+        #   Make sure to append to self (a `Population`) instead of overwriting with a basic `list`
+        del self[:]
         if population:
             self += population
         else:
@@ -246,14 +303,20 @@ class Population(list):
             yield (self.generation, scores)
             self.generation += 1
 
-            #   Keep up to the first `top_n` and generate up to (`population_size` - `top_n`) new ones
-            new_population =  [a_score[1] for a_score in scores[:self.top_n]]
+            #   Keep up to the `top_n`, keep up to the first `top_n * 4` and mutate them, and regenerate the rest
+            new_population      = [a_score[1] for a_score in scores[:self.top_n]]
+            mutated_population  = [copy.deepcopy(a_score[1]) for a_score in scores[:self.top_n*4]]
+            for a_member in mutated_population:
+                a_member.mutate()
+            new_population += mutated_population
             new_population += [Circuit(random=True) for i in range(0, self.population_size - len(new_population))]
+
+            #   Make sure to append to self (a `Population`) instead of overwriting with a basic `list`
             del self[:]
             self += new_population
 
 if __name__ == "__main__":
-    desired_score   = 5
+    desired_score   = 15
     top_score       = None
     a_population    = Population()
 
@@ -266,7 +329,7 @@ if __name__ == "__main__":
         print "\n"        
 
         #   Print the top score
-        print "Top Score (generation %d): score: %s\n\n" % (generation, top_score[0])
+        print "Top Score (generation %d): %s\n\n" % (generation, top_score[0])
         printing.print_circuit(top_score[1].circuit)
         print "\nMaximum attenuation in the pass band (0-%g Hz) is %g dB" % top_score[1].max_attenuation_pass_band
         print "Minimum attenuation in the stop band (%g Hz - Inf) is %g dB" % top_score[1].min_attenuation_stop_band

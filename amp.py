@@ -80,10 +80,11 @@ class Circuit(list):
         self.num_nodes  = num_nodes     #   Number of connection nodes
         self.outfile    = outfile       #   The filename for Ahkab's scratchpad
         self.weights    = weights if weights else [
-            -1.0,   #   Maximum attenuation in the pass band
-             1.0,   #   Minimum attenuation in the stop band
-            -1.0,   #   Number of nodes
-            -1.0    #   Number of parts
+             10.0,  #   log 10 (Minimum attenuation in the stop band / Maximum attenuation in the pass band)
+            -100.0, #   Maximum attenuation in the pass band
+             10.0,  #   Minimum attenuation in the stop band
+            -2.0,   #   Number of nodes
+            -2.0    #   Number of parts
         ]
         
         self.circuit                    = None  #   An Ahkab circuit object
@@ -102,9 +103,9 @@ class Circuit(list):
 
     #   Creates many random `Component`s
     def random(self):
-        self.num_nodes = random.randint(4, 8)
+        self.num_nodes = random.randint(3, 8)
 
-        for i in range(0, random.randint(1, 20)):
+        for i in range(0, random.randint(4, 20)):
             #   Make sure to append to self (a `Circuit`) instead of overwriting with a basic `list`
             self.append(self.random_part())
             
@@ -134,8 +135,8 @@ class Circuit(list):
             print "Mutating (from):"
             pp(self)
 
-        if  mutation < 200:     self.mutate_delete()
-        elif mutation < 400:    self.mutate_add()
+        if  mutation < 400:     self.mutate_delete()
+        elif mutation < 500:    self.mutate_add()
         elif mutation < 800:    self.mutate_value()
         elif mutation < 900:    self.mutate_node()
 
@@ -149,7 +150,9 @@ class Circuit(list):
         if debug:
             print "Mutate 'delete'"
 
-        del self[random.randint(0, len(self)-1)]
+        size = len(self)
+        if size > 1:
+            del self[random.randint(0, size-1)]
 
     #   Adds a `Component`
     def mutate_add(self):
@@ -246,21 +249,24 @@ class Circuit(list):
 
         if debug:
             printing.print_circuit(self.circuit)
+            print "log((MASB / MAPB), 10) = %f" % math.log((self.min_attenuation_stop_band[1] / self.max_attenuation_pass_band[1]), 10)
             print "Maximum attenuation in the pass band (0-%g Hz) is %g dB" % self.max_attenuation_pass_band
             print "Minimum attenuation in the stop band (%g Hz - Inf) is %g dB\n" % self.min_attenuation_stop_band
 
         #   Form a draft of the final score
         a_score = [
+            math.log((self.min_attenuation_stop_band[1] / self.max_attenuation_pass_band[1]), 10),
             self.max_attenuation_pass_band[1], 
             self.min_attenuation_stop_band[1], 
             self.num_nodes,
-            len(self)]
+            len(self)
+        ]
 
         #   Weight the draft version of the final score
         return sum([a_weight * a_score for (a_weight, a_score) in zip(self.weights, a_score)])
 
 class Population(list):
-    def __init__(self, population=None, population_size=50, top_n=5, generation=0):
+    def __init__(self, population=None, population_size=75, top_n=5, generation=0):
         self.population_size    = population_size
         self.top_n              = top_n
         self.generation         = generation
@@ -303,11 +309,15 @@ class Population(list):
             yield (self.generation, scores)
             self.generation += 1
 
-            #   Keep the best one, copy and mutate up to the top_n`, and regenerate the rest
-            new_population      = [scores[0][1]]
-            mutated_population  = [copy.deepcopy(scores[0][1]) for i in range(0, 4)] + \
-                                  [copy.deepcopy(a_score[1]) for a_score in scores[:self.top_n]]
-            for a_member in mutated_population: a_member.mutate()
+            new_population      =   [copy.deepcopy(a_score[1]) for a_score in scores[:self.top_n]]
+            mutated_population  =   (copy.deepcopy([scores[0][1]]) * self.top_n)   + \
+                                    (copy.deepcopy([scores[1][1]]) * self.top_n)   + \
+                                    (copy.deepcopy([scores[2][1]]) * self.top_n)   + \
+                                    [copy.deepcopy(a_score[1]) for a_score in scores[:self.top_n]]
+
+            for a_member in mutated_population:
+                a_member.mutate()
+
             new_population += mutated_population
             new_population += [Circuit(random=True) for i in range(0, self.population_size - len(new_population))]
 
@@ -316,9 +326,36 @@ class Population(list):
             self += new_population
 
 if __name__ == "__main__":
-    desired_score   = 25
+    desired_score   = 100
     top_score       = None
-    a_population    = Population(population_size=10, top_n=3)
+    a_population    = Population()
+
+    #   Create a seed circuit (discovered by this GA and saved)
+    a_circuit = Circuit()
+    a_circuit.component_types['R'][2] = 7
+    a_circuit.component_types['L'][2] = 4
+    a_circuit.component_types['C'][2] = 4
+    a_circuit += [
+        Resistor(   part_id='R0',   ext_n1='0',     ext_n2='n8',    value=130000),
+        Resistor(   part_id='R1',   ext_n1='n3',    ext_n2='n1',    value=510),
+        Resistor(   part_id='R2',   ext_n1='0',     ext_n2='n1',    value=100000),
+        Resistor(   part_id='R3',   ext_n1='0',     ext_n2='n4',    value=100000),
+        Resistor(   part_id='R4',   ext_n1='n5',    ext_n2='0',     value=300),
+        Resistor(   part_id='R5',   ext_n1='n2',    ext_n2='n3',    value=330),
+        Resistor(   part_id='R6',   ext_n1='n8',    ext_n2='n6',    value=160),
+        Inductor(   part_id='L0',   ext_n1='n8',    ext_n2='n5',    value=6.2e-08),
+        Inductor(   part_id='L1',   ext_n1='n4',    ext_n2='n6',    value=3.3e-07),
+        Inductor(   part_id='L2',   ext_n1='n1',    ext_n2='n3',    value=1.3e-08),
+        Inductor(   part_id='L3',   ext_n1='0',     ext_n2='0',     value=1.3e-07),
+        Capacitor(  part_id='C0',   ext_n1='0',     ext_n2='n4',    value=5.6e-09),
+        Capacitor(  part_id='C1',   ext_n1='n2',    ext_n2='n7',    value=8.2e-08),
+        Capacitor(  part_id='C2',   ext_n1='n7',    ext_n2='n5',    value=6.8e-06),
+        Capacitor(  part_id='C3',   ext_n1='n6',    ext_n2='0',     value=3.9e-07)
+    ]
+
+    #   Append the seed circuit to the population
+    a_population.append(a_circuit)
+    a_population.population_size += 1
 
     for (generation, scores) in a_population.simulate() :
         #   Print out the remaining circuits
@@ -331,7 +368,8 @@ if __name__ == "__main__":
         #   Print the top score
         print "Top Score (generation %d): %s\n\n" % (generation, top_score[0])
         printing.print_circuit(top_score[1].circuit)
-        print "\nMaximum attenuation in the pass band (0-%g Hz) is %g dB" % top_score[1].max_attenuation_pass_band
+        print "log((MASB / MAPB), 10) = %f" % math.log((top_score[1].min_attenuation_stop_band[1] / top_score[1].max_attenuation_pass_band[1]), 10)
+        print "Maximum attenuation in the pass band (0-%g Hz) is %g dB" % top_score[1].max_attenuation_pass_band
         print "Minimum attenuation in the stop band (%g Hz - Inf) is %g dB" % top_score[1].min_attenuation_stop_band
 
         #   Good Enough answer found

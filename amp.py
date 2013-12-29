@@ -266,7 +266,7 @@ class Circuit(list):
         return sum([a_weight * a_score for (a_weight, a_score) in zip(self.weights, a_score)])
 
 class Population(list):
-    def __init__(self, population=None, population_size=75, top_n=5, generation=0):
+    def __init__(self, population=None, population_size=500, top_n=15, generation=0):
         self.population_size    = population_size
         self.top_n              = top_n
         self.generation         = generation
@@ -282,6 +282,19 @@ class Population(list):
             self += population
         else:
             self += [Circuit(random=True) for i in range(0, self.population_size)]
+
+    def recombine(self, a, b):
+        a_circuit = Circuit()
+
+        #   Create a circuit with the mean number of components of `a` and `b`, choosing 
+        #   components randomly from either `a` or `b`. Renumber the components to avoid overlaps.
+        for i in range(0, ((len(a) + len(b)) / 2)):
+            a_part          = copy.deepcopy(random.choice(random.choice([a, b])))
+            a_part.part_id  = "%s%d" % (a_part.part_id[0], a_circuit.component_types[a_part.part_id[0]][2])
+            a_circuit.append(a_part)
+            a_circuit.component_types[a_part.part_id[0]][2] += 1
+
+        return a_circuit
 
     def simulate(self):
         while True:
@@ -309,16 +322,43 @@ class Population(list):
             yield (self.generation, scores)
             self.generation += 1
 
-            new_population      =   [copy.deepcopy(a_score[1]) for a_score in scores[:self.top_n]]
-            mutated_population  =   (copy.deepcopy([scores[0][1]]) * self.top_n)   + \
-                                    (copy.deepcopy([scores[1][1]]) * self.top_n)   + \
-                                    (copy.deepcopy([scores[2][1]]) * self.top_n)   + \
-                                    [copy.deepcopy(a_score[1]) for a_score in scores[:self.top_n]]
+            #   Pristine copies of the `top_n`
+            new_population          =   [copy.deepcopy(a_score[1]) for a_score in scores[:self.top_n]]
+
+            #   Mutated copies of the `top_n`
+            mutated_population      =   (copy.deepcopy([scores[0][1]]) * self.top_n)   + \
+                                        (copy.deepcopy([scores[1][1]]) * self.top_n)   + \
+                                        (copy.deepcopy([scores[2][1]]) * self.top_n)   + \
+                                        [copy.deepcopy(a_score[1]) for a_score in scores[:self.top_n]]
 
             for a_member in mutated_population:
                 a_member.mutate()
 
             new_population += mutated_population
+
+            #   Recombined copies of the `top_n`
+            recombined_population   =   (copy.deepcopy([scores[0][1]]) * self.top_n)   + \
+                                        (copy.deepcopy([scores[1][1]]) * self.top_n)   + \
+                                        (copy.deepcopy([scores[2][1]]) * self.top_n)   + \
+                                        [copy.deepcopy(a_score[1]) for a_score in scores[:self.top_n]]
+
+            for i in range(0, len(recombined_population) * 2):
+                a_member    = random.choice(recombined_population)
+                b_member    = random.choice(recombined_population)
+                new_member  = self.recombine(a_member, b_member)
+                
+                if debug:
+                    print "\nCircuit A\n---------"
+                    pp(a_member)
+                    print "\nCircuit B\n---------"
+                    pp(b_member)
+                    print "\nNew Circuit\n---------"
+                    pp(new_member)
+                    print
+
+                new_population.append(new_member)
+
+            #   Random new population
             new_population += [Circuit(random=True) for i in range(0, self.population_size - len(new_population))]
 
             #   Make sure to append to self (a `Population`) instead of overwriting with a basic `list`
@@ -329,33 +369,57 @@ if __name__ == "__main__":
     desired_score   = 100
     top_score       = None
     a_population    = Population()
+    pre_seed        = False
 
-    #   Create a seed circuit (discovered by this GA and saved)
-    a_circuit = Circuit()
-    a_circuit.component_types['R'][2] = 7
-    a_circuit.component_types['L'][2] = 4
-    a_circuit.component_types['C'][2] = 4
-    a_circuit += [
-        Resistor(   part_id='R0',   ext_n1='0',     ext_n2='n8',    value=130000),
-        Resistor(   part_id='R1',   ext_n1='n3',    ext_n2='n1',    value=510),
-        Resistor(   part_id='R2',   ext_n1='0',     ext_n2='n1',    value=100000),
-        Resistor(   part_id='R3',   ext_n1='0',     ext_n2='n4',    value=100000),
-        Resistor(   part_id='R4',   ext_n1='n5',    ext_n2='0',     value=300),
-        Resistor(   part_id='R5',   ext_n1='n2',    ext_n2='n3',    value=330),
-        Resistor(   part_id='R6',   ext_n1='n8',    ext_n2='n6',    value=160),
-        Inductor(   part_id='L0',   ext_n1='n8',    ext_n2='n5',    value=6.2e-08),
-        Inductor(   part_id='L1',   ext_n1='n4',    ext_n2='n6',    value=3.3e-07),
-        Inductor(   part_id='L2',   ext_n1='n1',    ext_n2='n3',    value=1.3e-08),
-        Inductor(   part_id='L3',   ext_n1='0',     ext_n2='0',     value=1.3e-07),
-        Capacitor(  part_id='C0',   ext_n1='0',     ext_n2='n4',    value=5.6e-09),
-        Capacitor(  part_id='C1',   ext_n1='n2',    ext_n2='n7',    value=8.2e-08),
-        Capacitor(  part_id='C2',   ext_n1='n7',    ext_n2='n5',    value=6.8e-06),
-        Capacitor(  part_id='C3',   ext_n1='n6',    ext_n2='0',     value=3.9e-07)
-    ]
+    if pre_seed:
+        #   Create a seed circuit (discovered by this GA and saved)
+        a_circuit = Circuit()
+        a_circuit.component_types['R'][2] = 7
+        a_circuit.component_types['L'][2] = 4
+        a_circuit.component_types['C'][2] = 4
+        a_circuit += [
+            Resistor(   part_id='R0',   ext_n1='0',     ext_n2='n8',    value=130000),
+            Resistor(   part_id='R1',   ext_n1='n3',    ext_n2='n1',    value=510),
+            Resistor(   part_id='R2',   ext_n1='0',     ext_n2='n1',    value=100000),
+            Resistor(   part_id='R3',   ext_n1='0',     ext_n2='n4',    value=100000),
+            Resistor(   part_id='R4',   ext_n1='n5',    ext_n2='0',     value=300),
+            Resistor(   part_id='R5',   ext_n1='n2',    ext_n2='n3',    value=330),
+            Resistor(   part_id='R6',   ext_n1='n8',    ext_n2='n6',    value=160),
+            Inductor(   part_id='L0',   ext_n1='n8',    ext_n2='n5',    value=6.2e-08),
+            Inductor(   part_id='L1',   ext_n1='n4',    ext_n2='n6',    value=3.3e-07),
+            Inductor(   part_id='L2',   ext_n1='n1',    ext_n2='n3',    value=1.3e-08),
+            Inductor(   part_id='L3',   ext_n1='0',     ext_n2='0',     value=1.3e-07),
+            Capacitor(  part_id='C0',   ext_n1='0',     ext_n2='n4',    value=5.6e-09),
+            Capacitor(  part_id='C1',   ext_n1='n2',    ext_n2='n7',    value=8.2e-08),
+            Capacitor(  part_id='C2',   ext_n1='n7',    ext_n2='n5',    value=6.8e-06),
+            Capacitor(  part_id='C3',   ext_n1='n6',    ext_n2='0',     value=3.9e-07)
+        ]
 
-    #   Append the seed circuit to the population
-    a_population.append(a_circuit)
-    a_population.population_size += 1
+        #   Append the seed circuit to the population
+        a_population.append(a_circuit)
+        a_population.population_size += 1
+
+        #   Create a second seed circuit
+        a_circuit = Circuit()
+        a_circuit.component_types['R'][2] = 4
+        a_circuit.component_types['L'][2] = 3
+        a_circuit.component_types['C'][2] = 3
+        a_circuit += [
+            Resistor(   part_id='R0',   ext_n1='0',     ext_n2='n4',    value=100000),
+            Resistor(   part_id='R1',   ext_n1='n5',    ext_n2='0',     value=300),
+            Resistor(   part_id='R2',   ext_n1='n2',    ext_n2='n3',    value=330),
+            Resistor(   part_id='R3',   ext_n1='n8',    ext_n2='n6',    value=160),
+            Inductor(   part_id='L0',   ext_n1='n8',    ext_n2='n5',    value=6.2e-08),
+            Inductor(   part_id='L1',   ext_n1='n4',    ext_n2='n6',    value=3.3e-07),
+            Inductor(   part_id='L2',   ext_n1='n1',    ext_n2='n3',    value=1.3e-08),
+            Capacitor(  part_id='C0',   ext_n1='n2',    ext_n2='n7',    value=8.2e-08),
+            Capacitor(  part_id='C1',   ext_n1='n7',    ext_n2='n5',    value=6.8e-06),
+            Capacitor(  part_id='C2',   ext_n1='n6',    ext_n2='0',     value=3.9e-07)
+        ]
+
+        #   Append the seed circuit to the population
+        a_population.append(a_circuit)
+        a_population.population_size += 1
 
     for (generation, scores) in a_population.simulate() :
         #   Print out the remaining circuits

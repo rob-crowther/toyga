@@ -255,7 +255,7 @@ class Population(list):
 if __name__ == "__main__":
     desired_score   = 5
     top_score       = None
-    a_population    = Population(population_size=10)
+    a_population    = Population(population_size=200)
 
     for (generation, scores) in a_population.simulate() :
         #   Print out the remaining circuits

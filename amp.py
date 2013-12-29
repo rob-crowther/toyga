@@ -98,28 +98,27 @@ class Circuit(list):
         self.num_parts  = random.randint(4, 12)
         self.num_nodes  = self.num_parts
 
-        #   Component type (first letter of `part_id`) and class
-        component_choices = [
-            ('R', Resistor),   
-            ('L', Inductor),    
-            ('C', Capacitor)]
+        #   Component type (first letter of `part_id`): (class, count)
+        component_choices = {
+            'R': [Resistor,     0],   
+            'L': [Inductor,     0],    
+            'C': [Capacitor,    0]
+        }
 
         #   Create a list of all the nodes to select from, emphasizing ground
         all_nodes = (['0'] * 3) + ["n%d" % i for i in range(1, self.num_nodes)]
 
-        #   Counters for assigning next `part_id` per component type
-        count = {'R': 0, 'L': 0, 'C': 0}
-
         #   Create random components
         for i in range(0, self.num_parts):
-            a_type, a_class = random.choice(component_choices)
+            a_type          = random.choice(component_choices.keys())
+            a_class, an_id  = component_choices[a_type]
             a_part          = a_class()
             a_part.value    = random.choice(a_part.common)
-            a_part.part_id  = "%s%d" % (a_type, count[a_type])
+            a_part.part_id  = "%s%d" % (a_type, an_id)
             a_part.ext_n1   = random.choice(all_nodes)
             a_part.ext_n2   = random.choice(all_nodes)
             self.append(a_part)
-            count[a_type] += 1
+            component_choices[a_type][1] += 1
 
     #   Drive the Ahkab circuit simulator
     def simulate(self):
@@ -214,7 +213,7 @@ class Population(list):
         self.repopulate(population=population, population_size=self.population_size)
 
     def repopulate(self, population=None, population_size=None):
-        self.__delslice__(0, self.population_size)
+        del self[:]
         if population_size: self.population_size = population_size
         if population:
             self += population
@@ -233,6 +232,7 @@ class Population(list):
             #   Sort the results
             scores.sort(key=lambda x: -x[0])
 
+            #   No surviving circuits in this generation
             if not scores:
                 self.repopulate()
                 print "Generation %d: mulligan" % self.generation
@@ -249,7 +249,7 @@ class Population(list):
             #   Keep up to the first `top_n` and generate up to (`population_size` - `top_n`) new ones
             new_population =  [a_score[1] for a_score in scores[:self.top_n]]
             new_population += [Circuit(random=True) for i in range(0, self.population_size - len(new_population))]
-            self.__delslice__(0, self.population_size)
+            del self[:]
             self += new_population
 
 if __name__ == "__main__":

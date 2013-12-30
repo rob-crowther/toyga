@@ -2,13 +2,12 @@ toyga
 =====
 
 This was originally posted as an entry on 
-[longchute](https://longchute.heroku.com/2013/12/27/toy-genetic-algorithm-part-2/). It uses the
-`simulate` function of a `Circuit` to drive a circuit simulator 
-([Ahkab](https://ahkab.github.com/ahkab/)) with a `Population` of random `Circuit`s made of random 
-`Component`s (`Resistor`, `Inductor`. and `Capacitor`) representing low-pass filters. It runs an 
-AC analysis and minimizes the maximum attenuation in the pass band and maximizes the minimum 
-attenuation in the stop band. If `pre_seed` is altered to `pre_seed = True`, the population will 
-be seeded with two pre-existing circuits found during earlier runs.
+[longchute](https://longchute.heroku.com/2013/12/27/toy-genetic-algorithm-part-2/). A `Population` 
+of random `Circuit`s made of random `Component`s (`Resistor`, `Inductor`. and `Capacitor`) 
+representing low-pass filters are `simulate`d using [Ahkab](https://ahkab.github.com/ahkab/). It 
+runs an AC analysis and minimizes the maximum attenuation in the pass band and maximizes the 
+minimum attenuation in the stop band. If `pre_seed` is altered to `pre_seed = True`, the 
+population will be seeded with two pre-existing circuits found during earlier runs.
 
 The `score` code in `Circuit` is largely derived from 
 [this example](https://github.com/ahkab/ahkab/wiki/Example:-Python-API). A `Population` holds 

@@ -123,8 +123,8 @@ class Circuit(list):
         a_part                  = a_class()
         a_part.value            = random.choice(a_part.common)
         a_part.part_id          = "%s%d" % (a_type, an_id)
-        a_part.ext_n1           = random.choice(all_nodes)
-        a_part.ext_n2           = random.choice(all_nodes)
+        a_part.n1               = random.choice(all_nodes)
+        a_part.n2               = random.choice(all_nodes)
 
         #   Increment per-subclass counter (for next `an_id`)
         self.component_types[a_type][2] += 1
@@ -185,9 +185,9 @@ class Circuit(list):
 
         #   Choose a random connection node to swap
         if random.randint(0, 1):
-            a_part.ext_n1 = random.choice(all_nodes)
+            a_part.n1 = random.choice(all_nodes)
         else:
-            a_part.ext_n2 = random.choice(all_nodes)
+            a_part.n2 = random.choice(all_nodes)
 
     #   Drive the Ahkab circuit simulator
     def simulate(self):
@@ -203,8 +203,8 @@ class Circuit(list):
             #   Call the init method of the current component type
             getattr(self.circuit, self.component_types[i.part_id[0]][1])(
                 i.part_id, 
-                i.ext_n1,
-                i.ext_n2,
+                i.n1,
+                i.n2,
                 value=i.value)
 
         #   Add a voltage source
@@ -252,9 +252,9 @@ class Circuit(list):
 
         if debug:
             printing.print_circuit(self.circuit)
-            print "log((MASB / MAPB), 10) = %f" % math.log((self.min_attenuation_stop_band[1] / self.max_attenuation_pass_band[1]), 10)
+            print "\nlog((MASB / MAPB), 10) = %f" % math.log((self.min_attenuation_stop_band[1] / self.max_attenuation_pass_band[1]), 10)
             print "Maximum attenuation in the pass band (0-%g Hz) is %g dB" % self.max_attenuation_pass_band
-            print "Minimum attenuation in the stop band (%g Hz - Inf) is %g dB\n" % self.min_attenuation_stop_band
+            print "Minimum attenuation in the stop band (%g Hz - Inf) is %g dB\n\n" % self.min_attenuation_stop_band
 
         #   Form a draft of the final score
         a_score = [
@@ -368,7 +368,7 @@ class Population(list):
 if __name__ == "__main__":
     desired_score   = 1000
     top_score       = None
-    a_population    = Population()
+    a_population    = Population(population_size=20, top_n=1)
     pre_seed        = False
 
     if pre_seed:
@@ -411,9 +411,9 @@ if __name__ == "__main__":
         #   Print the top score
         print "Top Score (generation %d): %s\n\n" % (generation, top_score[0])
         printing.print_circuit(top_score[1].circuit)
-        print "log((MASB / MAPB), 10) = %f" % math.log((top_score[1].min_attenuation_stop_band[1] / top_score[1].max_attenuation_pass_band[1]), 10)
+        print "\nlog((MASB / MAPB), 10) = %f" % math.log((top_score[1].min_attenuation_stop_band[1] / top_score[1].max_attenuation_pass_band[1]), 10)
         print "Maximum attenuation in the pass band (0-%g Hz) is %g dB" % top_score[1].max_attenuation_pass_band
-        print "Minimum attenuation in the stop band (%g Hz - Inf) is %g dB\n" % top_score[1].min_attenuation_stop_band
+        print "Minimum attenuation in the stop band (%g Hz - Inf) is %g dB\n\n" % top_score[1].min_attenuation_stop_band
 
         #   Good Enough answer found
         if top_score[0] > desired_score:

@@ -408,7 +408,7 @@ if __name__ == "__main__":
         #   Print out the remaining circuits
         top_score = scores[0]
         print "Scores\n------\n"
-        pp(scores)
+        pp(sorted(scores, key=lambda x: x[0]))  #   Print scores in reverse order for easier viewing
         print "\n"        
 
         #   Print the top score

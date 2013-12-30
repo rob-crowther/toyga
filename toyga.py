@@ -328,23 +328,20 @@ class Population(list):
             #   Pristine copies of the `top_n`
             new_population          =   [copy.deepcopy(a_score[1]) for a_score in scores[:self.top_n]]
 
-            #   Mutated copies of the `top_n`
+            #   Select subpopulations for mutation and recombination
             mutated_population      =   (copy.deepcopy([scores[0][1]]) * self.top_n)   + \
                                         (copy.deepcopy([scores[1][1]]) * self.top_n)   + \
                                         (copy.deepcopy([scores[2][1]]) * self.top_n)   + \
                                         [copy.deepcopy(a_score[1]) for a_score in scores[:self.top_n]]
+            recombined_population   = copy.deepcopy(mutated_population)
 
+            #   Mutate copies of the `top_n`
             for a_member in mutated_population:
                 a_member.mutate()
 
             new_population += mutated_population
 
-            #   Recombined copies of the `top_n`
-            recombined_population   =   (copy.deepcopy([scores[0][1]]) * self.top_n)   + \
-                                        (copy.deepcopy([scores[1][1]]) * self.top_n)   + \
-                                        (copy.deepcopy([scores[2][1]]) * self.top_n)   + \
-                                        [copy.deepcopy(a_score[1]) for a_score in scores[:self.top_n]]
-
+            #   Recombine copies of the `top_n`
             for i in range(0, len(recombined_population) * 2):
                 a_member    = random.choice(recombined_population)
                 b_member    = random.choice(recombined_population)

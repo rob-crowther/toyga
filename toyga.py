@@ -77,7 +77,7 @@ class Capacitor(Component):
         8.2e-06]
 
 class Circuit(list):       
-    def __init__(self, title="Untitled", num_nodes=0, outfile='ramdisk/sim.ac', sim_verbosity=0, weights=None, random=None):
+    def __init__(self, title='Untitled', num_nodes=0, outfile='ramdisk/sim.ac', sim_verbosity=0, weights=None, random=None):
         self.title          = title             #   Title of the circuit
         self.num_nodes      = num_nodes         #   Number of connection nodes
         self.outfile        = outfile           #   The filename for Ahkab's scratchpad
@@ -135,7 +135,7 @@ class Circuit(list):
         mutation = random.randint(0, 1000)
 
         if debug:
-            print "Mutating (from):"
+            print 'Mutating (from):'
             pp(self)
 
         if  mutation < 400:     self.mutate_delete()
@@ -144,13 +144,13 @@ class Circuit(list):
         elif mutation < 900:    self.mutate_node()
 
         if debug:
-            print "Mutating (to):"
+            print 'Mutating (to):'
             pp(self)
             print "\n"
 
     #   Deletes a `Component`
     def mutate_delete(self):
-        if debug: print "Mutate 'delete'"
+        if debug: print 'Mutate \'delete\''
 
         size = len(self)
         if size > 1:
@@ -158,19 +158,19 @@ class Circuit(list):
 
     #   Adds a `Component`
     def mutate_add(self):
-        if debug: print "Mutate 'add'"
+        if debug: print 'Mutate \'add\''
 
         self.append(self.random_part())
 
     #   Selects a new `value` for a random `Component`
     def mutate_value(self):
-        if debug: print "Mutate 'value'"
+        if debug: print 'Mutate \'value\''
 
         a_part          = self[random.randint(0, len(self)-1)]
         a_part.value    = random.choice(a_part.common)
 
     def mutate_node(self):
-        if debug: print "Mutate 'node'"
+        if debug: print 'Mutate \'node\''
 
         #   Create a list of all the nodes to select from, emphasizing ground
         all_nodes = (['0'] * 3) + ["n%d" % i for i in range(1, self.num_nodes)]
@@ -345,11 +345,11 @@ class Population(list):
                 new_member  = self.recombine(a_member, b_member)
                 
                 if debug:
-                    print "\nCircuit A\n---------"
+                    print '\nCircuit A\n---------'
                     pp(a_member)
-                    print "\nCircuit B\n---------"
+                    print '\nCircuit B\n---------'
                     pp(b_member)
-                    print "\nNew Circuit\n---------"
+                    print '\nNew Circuit\n---------'
                     pp(new_member)
                     print
 
@@ -362,7 +362,7 @@ class Population(list):
             del self[:]
             self += new_population
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     desired_score   = 1000
     top_score       = None
     a_population    = Population(population_size=20, top_n=1)
@@ -401,7 +401,7 @@ if __name__ == "__main__":
     for (generation, scores) in a_population.simulate() :
         #   Print out the remaining circuits
         top_score = scores[0]
-        print "Scores\n------\n"
+        print 'Scores\n------\n'
         pp(sorted(scores, key=lambda x: x[0]))  #   Print scores in reverse order for easier viewing
         print "\n"        
 

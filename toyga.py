@@ -11,7 +11,7 @@ import time
 import copy
 from pprint import pprint as pp
 
-debug = False
+debug = True
 
 if debug:
     print "Using `ahkab` %s" % ahkab.ahkab.__version__
@@ -209,7 +209,7 @@ class Circuit(list):
 
         #   Add a voltage source
         voltage_step = devices.pulse(v1=0, v2=1, td=500e-9, tr=1e-12, pw=1, tf=1e-12, per=2)
-        self.circuit.add_vsource(name="V1", n1='n1', n2='0', vdc=5, vac=1, function=voltage_step)
+        self.circuit.add_vsource(part_id='V1', n1='n1', n2='0', value=5, vac=1, function=voltage_step)
 
         #   Simulate the circuit with an AC analysis
         return ahkab.ac.ac_analysis(self.circuit, 1e3, 100, 1e5, 'LOG', outfile=self.outfile, verbose=self.sim_verbosity)

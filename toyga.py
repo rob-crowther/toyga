@@ -17,7 +17,7 @@ if debug:
     print "Using `ahkab` %s" % ahkab.ahkab.__version__
 
 class Component(object):
-    def __init__(self, value=None, part_id=None, n1=None, n2=None):
+    def __init__(self, part_id=None, n1=None, n2=None, value=None):
         self.value      = value
         self.part_id    = part_id
         self.n1         = n1
@@ -151,8 +151,7 @@ class Circuit(list):
 
     #   Deletes a `Component`
     def mutate_delete(self):
-        if debug:
-            print "Mutate 'delete'"
+        if debug: print "Mutate 'delete'"
 
         size = len(self)
         if size > 1:
@@ -160,22 +159,19 @@ class Circuit(list):
 
     #   Adds a `Component`
     def mutate_add(self):
-        if debug:
-            print "Mutate 'add'"
+        if debug: print "Mutate 'add'"
 
         self.append(self.random_part())
 
     #   Selects a new `value` for a random `Component`
     def mutate_value(self):
-        if debug:
-            print "Mutate 'value'"
+        if debug: print "Mutate 'value'"
 
         a_part          = self[random.randint(0, len(self)-1)]
         a_part.value    = random.choice(a_part.common)
 
     def mutate_node(self):
-        if debug:
-            print "Mutate 'node'"
+        if debug: print "Mutate 'node'"
 
         #   Create a list of all the nodes to select from, emphasizing ground
         all_nodes = (['0'] * 3) + ["n%d" % i for i in range(1, self.num_nodes)]

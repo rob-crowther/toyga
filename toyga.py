@@ -11,7 +11,7 @@ import time
 import copy
 from pprint import pprint as pp
 
-debug = True
+debug = False
 
 if debug:
     print "Using `ahkab` %s" % ahkab.ahkab.__version__
@@ -78,11 +78,12 @@ class Capacitor(Component):
         8.2e-06]
 
 class Circuit(list):       
-    def __init__(self, title="Untitled", num_nodes=0, outfile='ramdisk/sim.ac', weights=None, random=None):
-        self.title      = title         #   Title of the circuit
-        self.num_nodes  = num_nodes     #   Number of connection nodes
-        self.outfile    = outfile       #   The filename for Ahkab's scratchpad
-        self.weights    = weights if weights else [
+    def __init__(self, title="Untitled", num_nodes=0, outfile='ramdisk/sim.ac', sim_verbosity=0, weights=None, random=None):
+        self.title          = title             #   Title of the circuit
+        self.num_nodes      = num_nodes         #   Number of connection nodes
+        self.outfile        = outfile           #   The filename for Ahkab's scratchpad
+        self.sim_verbosity  = sim_verbosity     #   Simulation verbosity for Ahkab
+        self.weights        = weights if weights else [
              10.0,  #   log 10 (Minimum attenuation in the stop band / Maximum attenuation in the pass band)
             -100.0, #   Maximum attenuation in the pass band
              10.0,  #   Minimum attenuation in the stop band
@@ -211,7 +212,7 @@ class Circuit(list):
         self.circuit.add_vsource(name="V1", ext_n1='n1', ext_n2='0', vdc=5, vac=1, function=voltage_step)
 
         #   Simulate the circuit with an AC analysis
-        return ahkab.ac.ac_analysis(self.circuit, 1e3, 100, 1e5, 'LOG', outfile=self.outfile, verbose=0)
+        return ahkab.ac.ac_analysis(self.circuit, 1e3, 100, 1e5, 'LOG', outfile=self.outfile, verbose=self.sim_verbosity)
 
     def score(self):
         r = self.simulate()

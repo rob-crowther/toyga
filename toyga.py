@@ -11,7 +11,7 @@ import time
 import copy
 from pprint import pprint as pp
 
-debug = False
+debug = True
 
 if debug:
     print "Using `ahkab` %s" % ahkab.ahkab.__version__
@@ -215,7 +215,6 @@ class Circuit(list):
 
     def score(self):
         r = self.simulate()
-        print "\n"
 
         #   Didn't simulate
         if not r: return None
@@ -406,7 +405,6 @@ if __name__ == "__main__":
 
     for (generation, scores) in a_population.simulate() :
         #   Print out the remaining circuits
-        print "\n\n"
         top_score = scores[0]
         print "Scores\n------\n"
         pp(scores)
@@ -417,7 +415,7 @@ if __name__ == "__main__":
         printing.print_circuit(top_score[1].circuit)
         print "log((MASB / MAPB), 10) = %f" % math.log((top_score[1].min_attenuation_stop_band[1] / top_score[1].max_attenuation_pass_band[1]), 10)
         print "Maximum attenuation in the pass band (0-%g Hz) is %g dB" % top_score[1].max_attenuation_pass_band
-        print "Minimum attenuation in the stop band (%g Hz - Inf) is %g dB" % top_score[1].min_attenuation_stop_band
+        print "Minimum attenuation in the stop band (%g Hz - Inf) is %g dB\n" % top_score[1].min_attenuation_stop_band
 
         #   Good Enough answer found
         if top_score[0] > desired_score:

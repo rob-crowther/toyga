@@ -44,7 +44,7 @@ near-realtime viewing, you can `watch -n0.1 cat ramdisk/sim.ac`. You can set `de
 increase the simulation verbosity and include mutation and recombination details.
 
  This is tested on Python 2.7.6 with 
- [Ahkab fbd9777e7a](https://github.com/ahkab/ahkab/commit/fbd9777e7ad1a8afbdef18d68c2b2be827d61a8c), SciPy 0.12.1, NumPy 1.7.1, and SymPy 0.7.2. 
+ [a fork of Ahkab](https://github.com/weilawei/ahkab/), SciPy 0.12.1, NumPy 1.7.1, and SymPy 0.7.2. 
 
 **Usage**: `./toyga.py`
 

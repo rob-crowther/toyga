@@ -247,7 +247,7 @@ class Circuit(list):
         #   Eliminate unusable results
         if (self.max_attenuation_pass_band[1] == -0) or math.isnan(self.max_attenuation_pass_band[1]):
             return None
-        if (self.min_attenuation_stop_band[1] < 15.0) or math.isnan(self.min_attenuation_stop_band[1]):
+        if (self.min_attenuation_stop_band[1] == -0) or math.isnan(self.min_attenuation_stop_band[1]):
             return None
 
         if debug:
@@ -269,7 +269,7 @@ class Circuit(list):
         return sum([a_weight * a_score for (a_weight, a_score) in zip(self.weights, a_score)])
 
 class Population(list):
-    def __init__(self, population=None, population_size=500, top_n=15, generation=0):
+    def __init__(self, population=None, population_size=200, top_n=5, generation=0):
         self.population_size    = population_size
         self.top_n              = top_n
         self.generation         = generation
@@ -371,7 +371,7 @@ class Population(list):
 if __name__ == "__main__":
     desired_score   = 1000
     top_score       = None
-    a_population    = Population(population_size=100, top_n=3)
+    a_population    = Population()
     pre_seed        = False
 
     if pre_seed:
@@ -403,45 +403,6 @@ if __name__ == "__main__":
         #   Append the seed circuit to the population
         a_population.append(a_circuit)
         a_population.population_size += 1
-
-        #   Create a seed circuit
-        #a_circuit = Circuit()
-        #a_circuit.component_types['R'][2] = 3
-        #a_circuit.component_types['L'][2] = 1
-        #a_circuit.component_types['C'][2] = 1
-        #a_circuit += [
-        #    Resistor(   part_id='R2',   ext_n1='n6',    ext_n2='n4',    value=47000000),
-        #    Resistor(   part_id='R3',   ext_n1='n1',    ext_n2='n6',    value=540),
-        #    Resistor(   part_id='R6',   ext_n1='0',     ext_n2='0',     value=330),
-        #    Inductor(   part_id='L3',   ext_n1='n5',    ext_n2='0',     value=6e-09),
-        #    Capacitor(  part_id='C3',   ext_n1='n6',    ext_n2='n5',    value=1.2e-07)
-        #]
-
-        ##   Append the seed circuit to the population
-        #a_population.append(a_circuit)
-        #a_population.population_size += 1
-        
-        ##   Create a second seed circuit
-        #a_circuit = Circuit()
-        #a_circuit.component_types['R'][2] = 4
-        #a_circuit.component_types['L'][2] = 3
-        #a_circuit.component_types['C'][2] = 3
-        #a_circuit += [
-        #    Resistor(   part_id='R0',   ext_n1='0',     ext_n2='n4',    value=100000),
-        #    Resistor(   part_id='R1',   ext_n1='n5',    ext_n2='0',     value=300),
-        #    Resistor(   part_id='R2',   ext_n1='n2',    ext_n2='n3',    value=330),
-        #    Resistor(   part_id='R3',   ext_n1='n8',    ext_n2='n6',    value=160),
-        #    Inductor(   part_id='L0',   ext_n1='n8',    ext_n2='n5',    value=6.2e-08),
-        #    Inductor(   part_id='L1',   ext_n1='n4',    ext_n2='n6',    value=3.3e-07),
-        #    Inductor(   part_id='L2',   ext_n1='n1',    ext_n2='n3',    value=1.3e-08),
-        #    Capacitor(  part_id='C0',   ext_n1='n2',    ext_n2='n7',    value=8.2e-08),
-        #    Capacitor(  part_id='C1',   ext_n1='n7',    ext_n2='n5',    value=6.8e-06),
-        #    Capacitor(  part_id='C2',   ext_n1='n6',    ext_n2='0',     value=3.9e-07)
-        #]
-
-        ##   Append the seed circuit to the population
-        #a_population.append(a_circuit)
-        #a_population.population_size += 1
 
     for (generation, scores) in a_population.simulate() :
         #   Print out the remaining circuits

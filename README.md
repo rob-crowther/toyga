@@ -7,7 +7,7 @@ of random `Circuit`s made of random `Component`s (`Resistor`, `Inductor`. and `C
 representing low-pass filters are `simulate`d using [Ahkab](https://ahkab.github.com/ahkab/). It 
 runs an AC analysis and minimizes the maximum attenuation in the pass band and maximizes the 
 minimum attenuation in the stop band. If `pre_seed` is altered to `pre_seed = True`, the 
-population will be seeded with two pre-existing circuits found during earlier runs.
+population will be seeded with one or more-existing circuits.
 
 The `score` code in `Circuit` is largely derived from 
 [this example](https://github.com/ahkab/ahkab/wiki/Example:-Python-API). A `Population` holds 

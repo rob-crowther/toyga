@@ -31,7 +31,7 @@ All circuits being `recombine`d are done in a single pass. If no viable scores e
 generation, the population is `repopulate`d.
 
  **Note**: This expects a folder (`ramdisk`) within the current directory. Ahkab uses this as a 
- scratch pad for simulation results. Ahkab's `cvslib` expects a string for `filename`, so passing 
+ scratch pad for simulation results. Ahkab's `csvlib` expects a string for `filename`, so passing 
  a `tempfile.SpooledTemporaryFile` isn't possible. You should consider mounting a ramdisk at 
  `ramdisk` for increased speed and reduced wear on your drive. For example:
 

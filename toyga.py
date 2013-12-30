@@ -11,7 +11,7 @@ import time
 import copy
 from pprint import pprint as pp
 
-debug = True
+debug = False
 
 if debug:
     print "Using `ahkab` %s" % ahkab.ahkab.__version__
@@ -210,6 +210,12 @@ class Circuit(list):
         #   Simulate the circuit with an AC analysis
         return ahkab.ac.ac_analysis(self.circuit, 1e3, 100, 1e5, 'LOG', outfile=self.outfile, verbose=self.sim_verbosity)
 
+    def print_stats(self):
+        printing.print_circuit(self.circuit)
+        print "\nlog((MASB / MAPB), 10) = %f" % math.log((self.min_attenuation_stop_band[1] / self.max_attenuation_pass_band[1]), 10)
+        print "Maximum attenuation in the pass band (0-%g Hz) is %g dB" % self.max_attenuation_pass_band
+        print "Minimum attenuation in the stop band (%g Hz - Inf) is %g dB\n\n" % self.min_attenuation_stop_band
+
     def score(self):
         r = self.simulate()
 
@@ -246,11 +252,7 @@ class Circuit(list):
         if (self.min_attenuation_stop_band[1] == -0) or math.isnan(self.min_attenuation_stop_band[1]):
             return None
 
-        if debug:
-            printing.print_circuit(self.circuit)
-            print "\nlog((MASB / MAPB), 10) = %f" % math.log((self.min_attenuation_stop_band[1] / self.max_attenuation_pass_band[1]), 10)
-            print "Maximum attenuation in the pass band (0-%g Hz) is %g dB" % self.max_attenuation_pass_band
-            print "Minimum attenuation in the stop band (%g Hz - Inf) is %g dB\n\n" % self.min_attenuation_stop_band
+        if debug: self.print_stats()
 
         #   Form a draft of the final score
         a_score = [
@@ -406,10 +408,7 @@ if __name__ == "__main__":
 
         #   Print the top score
         print "Top Score (generation %d): %s\n\n" % (generation, top_score[0])
-        printing.print_circuit(top_score[1].circuit)
-        print "\nlog((MASB / MAPB), 10) = %f" % math.log((top_score[1].min_attenuation_stop_band[1] / top_score[1].max_attenuation_pass_band[1]), 10)
-        print "Maximum attenuation in the pass band (0-%g Hz) is %g dB" % top_score[1].max_attenuation_pass_band
-        print "Minimum attenuation in the stop band (%g Hz - Inf) is %g dB\n\n" % top_score[1].min_attenuation_stop_band
+        top_score[1].print_stats()
 
         #   Good Enough answer found
         if top_score[0] > desired_score:

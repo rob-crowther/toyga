@@ -11,7 +11,7 @@ import time
 import copy
 from pprint import pprint as pp
 
-debug = True
+debug = False
 
 if debug: print "Using `ahkab` %s" % ahkab.ahkab.__version__
 

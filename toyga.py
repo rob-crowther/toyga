@@ -13,8 +13,7 @@ from pprint import pprint as pp
 
 debug = False
 
-if debug:
-    print "Using `ahkab` %s" % ahkab.ahkab.__version__
+if debug: print "Using `ahkab` %s" % ahkab.ahkab.__version__
 
 class Component(object):
     def __init__(self, part_id=None, n1=None, n2=None, value=None):

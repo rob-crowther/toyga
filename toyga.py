@@ -17,11 +17,11 @@ if debug:
     print "Using `ahkab` %s" % ahkab.ahkab.__version__
 
 class Component(object):
-    def __init__(self, value=None, part_id=None, ext_n1=None, ext_n2=None):
+    def __init__(self, value=None, part_id=None, n1=None, n2=None):
         self.value      = value
         self.part_id    = part_id
-        self.ext_n1     = ext_n1
-        self.ext_n2     = ext_n2
+        self.n1         = n1
+        self.n2         = n2
 
     def __repr__(self):
         return '<%s.%s object at %s> %s %s %s %s' % (
@@ -29,8 +29,8 @@ class Component(object):
             self.__class__.__name__,
             hex(id(self)),
             self.part_id,
-            self.ext_n1,
-            self.ext_n2,
+            self.n1,
+            self.n2,
             self.value)
 
 class Resistor(Component):
@@ -205,11 +205,11 @@ class Circuit(list):
                 i.part_id, 
                 i.ext_n1,
                 i.ext_n2,
-                **{i.part_id[0]: i.value})  #   Create 'R', 'L', or 'C' kwarg for `self.circuit.add_*`
+                value=i.value)
 
         #   Add a voltage source
         voltage_step = devices.pulse(v1=0, v2=1, td=500e-9, tr=1e-12, pw=1, tf=1e-12, per=2)
-        self.circuit.add_vsource(name="V1", ext_n1='n1', ext_n2='0', vdc=5, vac=1, function=voltage_step)
+        self.circuit.add_vsource(name="V1", n1='n1', n2='0', vdc=5, vac=1, function=voltage_step)
 
         #   Simulate the circuit with an AC analysis
         return ahkab.ac.ac_analysis(self.circuit, 1e3, 100, 1e5, 'LOG', outfile=self.outfile, verbose=self.sim_verbosity)
@@ -378,23 +378,23 @@ if __name__ == "__main__":
         a_circuit.component_types['L'][2] = 5
         a_circuit.component_types['C'][2] = 7
         a_circuit += [
-            Resistor(   part_id='R0',   ext_n1='n5',    ext_n2='n3',    value=62000000),
-            Resistor(   part_id='R1',   ext_n1='n4',    ext_n2='n5',    value=620000),
-            Resistor(   part_id='R2',   ext_n1='n3',    ext_n2='n4',    value=680000),
-            Resistor(   part_id='R3',   ext_n1='n2',    ext_n2='n6',    value=22),
-            Resistor(   part_id='R4',   ext_n1='n6',    ext_n2='n1',    value=15),
-            Inductor(   part_id='L0',   ext_n1='n7',    ext_n2='n7',    value=1.6e-06),
-            Inductor(   part_id='L1',   ext_n1='n7',    ext_n2='n7',    value=9.1e-06),
-            Inductor(   part_id='L2',   ext_n1='0',     ext_n2='n1',    value=3e-09),
-            Inductor(   part_id='L3',   ext_n1='0',     ext_n2='n7',    value=3e-05),
-            Inductor(   part_id='L4',   ext_n1='0',     ext_n2='0',     value=1e-09),
-            Capacitor(  part_id='C0',   ext_n1='n7',    ext_n2='n2',    value=1.5e-09),
-            Capacitor(  part_id='C1',   ext_n1='0',     ext_n2='n6',    value=5.6e-07),
-            Capacitor(  part_id='C2',   ext_n1='0',     ext_n2='n3',    value=3.3e-10),
-            Capacitor(  part_id='C3',   ext_n1='n6',    ext_n2='0',     value=2.7e-07),
-            Capacitor(  part_id='C4',   ext_n1='n5',    ext_n2='n1',    value=6.8e-11),
-            Capacitor(  part_id='C5',   ext_n1='n7',    ext_n2='n7',    value=2.2e-08),
-            Capacitor(  part_id='C6',   ext_n1='0',     ext_n2='n4',    value=6.8e-09)
+            Resistor(   part_id='R0',   n1='n5',    n2='n3',    value=62000000),
+            Resistor(   part_id='R1',   n1='n4',    n2='n5',    value=620000),
+            Resistor(   part_id='R2',   n1='n3',    n2='n4',    value=680000),
+            Resistor(   part_id='R3',   n1='n2',    n2='n6',    value=22),
+            Resistor(   part_id='R4',   n1='n6',    n2='n1',    value=15),
+            Inductor(   part_id='L0',   n1='n7',    n2='n7',    value=1.6e-06),
+            Inductor(   part_id='L1',   n1='n7',    n2='n7',    value=9.1e-06),
+            Inductor(   part_id='L2',   n1='0',     n2='n1',    value=3e-09),
+            Inductor(   part_id='L3',   n1='0',     n2='n7',    value=3e-05),
+            Inductor(   part_id='L4',   n1='0',     n2='0',     value=1e-09),
+            Capacitor(  part_id='C0',   n1='n7',    n2='n2',    value=1.5e-09),
+            Capacitor(  part_id='C1',   n1='0',     n2='n6',    value=5.6e-07),
+            Capacitor(  part_id='C2',   n1='0',     n2='n3',    value=3.3e-10),
+            Capacitor(  part_id='C3',   n1='n6',    n2='0',     value=2.7e-07),
+            Capacitor(  part_id='C4',   n1='n5',    n2='n1',    value=6.8e-11),
+            Capacitor(  part_id='C5',   n1='n7',    n2='n7',    value=2.2e-08),
+            Capacitor(  part_id='C6',   n1='0',     n2='n4',    value=6.8e-09)
         ]
 
         #   Append the seed circuit to the population

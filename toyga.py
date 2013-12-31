@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
-import random
+#   Import another module as `sim` to switch external simulators
 import ahkab as sim
+
+import random
 import math
 import time
 import copy

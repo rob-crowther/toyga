@@ -7,9 +7,12 @@ of random `Circuit`s made of random `Component`s (`Resistor`, `Inductor`. and `C
 representing low-pass filters are `simulate`d using an external circuit simulator. The simulator 
 runs an AC analysis and toyga generates new circuits to minimize the maximum attenuation in the 
 pass band and maximize the minimum attenuation in the stop band. If `pre_seed` is altered to
-`pre_seed = True`, the population will be seeded with one or more-existing circuits.
+`pre_seed = True`, the population will be seeded with one or more-existing circuits. In the same directory as toyga, you must symlink `sim` to an external circuit simulator.
 
-A `Population` holds `population_size` `Circuit`s. When the `simulate` generator of a `Population` is iterated over, the `score` and `simulate` methods of each `Circuit` in the `Population` are called. Circuits that fail to simulate correctly are removed from the scoring before being returned. 
+A `Population` holds `population_size` `Circuit`s. When the `simulate` generator of a `Population` 
+is iterated over, the `score` and `simulate` methods of each `Circuit` in the `Population` are 
+called. Circuits that fail to simulate correctly are removed from the scoring before being
+returned. 
 
 In each generation:
 

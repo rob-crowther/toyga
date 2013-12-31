@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 
 import random
-import ahkab
-from ahkab import circuit, printing, devices
+import ahkab as sim
 import scipy
 import scipy.interpolate
 import numpy
@@ -13,7 +12,7 @@ from pprint import pprint as pp
 
 debug = True
 
-if debug: print "Using `ahkab` %s" % ahkab.ahkab.__version__
+if debug: print "Using sim: `%s` %s" % (sim.__name__, sim.__version__)
 
 class Component(object):
     def __init__(self, part_id=None, n1=None, n2=None, value=None):
@@ -80,8 +79,8 @@ class Circuit(list):
     def __init__(self, title='Untitled', num_nodes=0, outfile='ramdisk/sim.ac', sim_verbosity=0, weights=None, random=None):
         self.title          = title             #   Title of the circuit
         self.num_nodes      = num_nodes         #   Number of connection nodes
-        self.outfile        = outfile           #   The filename for Ahkab's scratchpad
-        self.sim_verbosity  = sim_verbosity     #   Simulation verbosity for Ahkab
+        self.outfile        = outfile           #   The filename for the simulation's scratchpad
+        self.sim_verbosity  = sim_verbosity     #   Simulation verbosity
         self.weights        = weights if weights else [
              10.0,  #   log 10 (Minimum attenuation in the stop band / Maximum attenuation in the pass band)
             -100.0, #   Maximum attenuation in the pass band
@@ -90,11 +89,11 @@ class Circuit(list):
             -2.0    #   Number of parts
         ]
         
-        self.circuit                    = None  #   An Ahkab circuit object
+        self.circuit                    = None  #   A simulation circuit object
         self.max_attenuation_pass_band  = None  #   Tuple of (pass band upper frequency, maximum attenuation)
         self.min_attenuation_stop_band  = None  #   Tuple of (stop band lower frequency, minimum attenuation)
 
-        #   Table of `Component` types to lists of [subclass, init method for Ahkab, subclass count]
+        #   Table of `Component` types to lists of [subclass, init method for sim, subclass count]
         self.component_types = {     
             'R': [Resistor,     'add_resistor',     0],   
             'L': [Inductor,     'add_inductor',     0],    
@@ -184,10 +183,10 @@ class Circuit(list):
         else:
             a_part.n2 = random.choice(all_nodes)
 
-    #   Drive the Ahkab circuit simulator
+    #   Drive the circuit simulator
     def simulate(self):
-        #   Build a copy of the circuit for Ahkab
-        self.circuit = circuit.Circuit(title=self.title)
+        #   Build a copy of the circuit for the simulator
+        self.circuit = sim.circuit.Circuit(title=self.title)
 
         #   Create nodes
         for i in range(0, self.num_nodes):
@@ -203,45 +202,25 @@ class Circuit(list):
                 value=i.value)
 
         #   Add a voltage source
-        voltage_step = devices.pulse(v1=0, v2=1, td=500e-9, tr=1e-12, pw=1, tf=1e-12, per=2)
+        voltage_step = sim.devices.pulse(v1=0, v2=1, td=500e-9, tr=1e-12, pw=1, tf=1e-12, per=2)
         self.circuit.add_vsource(part_id='V1', n1='n1', n2='0', value=5, vac=1, function=voltage_step)
 
         #   Simulate the circuit with an AC analysis
-        return ahkab.ac.ac_analysis(self.circuit, 1e3, 100, 1e5, 'LOG', outfile=self.outfile, verbose=self.sim_verbosity)
+        return sim.ac.ac_analysis(self.circuit, 1e3, 100, 1e5, 'LOG', outfile=self.outfile, verbose=self.sim_verbosity)
 
     def print_stats(self):
-        printing.print_circuit(self.circuit)
+        sim.printing.print_circuit(self.circuit)
         print "\nlog((MASB / MAPB), 10) = %f" % math.log((self.min_attenuation_stop_band[1] / self.max_attenuation_pass_band[1]), 10)
         print "Maximum attenuation in the pass band (0-%g Hz) is %g dB" % self.max_attenuation_pass_band
         print "Minimum attenuation in the stop band (%g Hz - Inf) is %g dB\n\n" % self.min_attenuation_stop_band
 
     def score(self):
-        r = self.simulate()
-
-        #   Didn't simulate
-        if not r: return None
-        
         try:
-            # Normalize the output to the low frequency value and convert to array
-            norm_out = numpy.asarray(r['|Vn4|'].T/r['|Vn4|'].max())
+            #   Ask the simulator to calculate max. attenuation in the pass band and min. attenuation in the stop band
+            mapsb = sim.utilities.mapsb(self.simulate(), 2e3, 6.5e3)
             
-            # Convert to dB
-            norm_out_db = 20 * numpy.log10(norm_out)
-            
-            # Reshape to be scipy-friendly
-            norm_out_db = norm_out_db.reshape((max(norm_out_db.shape),))
-            
-            # Convert angular frequencies to Hz and convert matrix to array
-            frequencies = numpy.asarray(r['w'].T/2/math.pi)
-            
-            # Reshape to be scipy-friendly
-            frequencies = frequencies.reshape((max(frequencies.shape),))
-            
-            # call scipy to interpolate
-            norm_out_db_interpolated = scipy.interpolate.interp1d(frequencies, norm_out_db)
-            
-            self.max_attenuation_pass_band = (2e3, -1.0*norm_out_db_interpolated(2e3))
-            self.min_attenuation_stop_band = (6.5e3, -1.0*norm_out_db_interpolated(6.5e3))
+            self.max_attenuation_pass_band = (2e3, mapsb[0])
+            self.min_attenuation_stop_band = (6.5e3, mapsb[1])
         #   If ANYTHING goes wrong, we just mark the circuit as bad. Lazy. (Possibly bad. Probably bad.)
         except: return None
 

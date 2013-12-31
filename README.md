@@ -4,16 +4,15 @@ toyga
 This was originally posted as an entry on 
 [longchute](https://longchute.heroku.com/2013/12/27/toy-genetic-algorithm-part-2/). A `Population` 
 of random `Circuit`s made of random `Component`s (`Resistor`, `Inductor`. and `Capacitor`) 
-representing low-pass filters are `simulate`d using [Ahkab](https://ahkab.github.com/ahkab/). It 
-runs an AC analysis and minimizes the maximum attenuation in the pass band and maximizes the 
-minimum attenuation in the stop band. If `pre_seed` is altered to `pre_seed = True`, the 
-population will be seeded with one or more-existing circuits.
+representing low-pass filters are `simulate`d using an external circuit simulator. The simulator 
+runs an AC analysis and toyga generates new circuits to minimize the maximum attenuation in the 
+pass band and maximize the minimum attenuation in the stop band. If `pre_seed` is altered to
+`pre_seed = True`, the population will be seeded with one or more-existing circuits.
 
-The `score` code in `Circuit` is largely derived from 
-[this example](https://github.com/ahkab/ahkab/wiki/Example:-Python-API). A `Population` holds 
-`population_size` `Circuit`s. When the `simulate` generator of a `Population` is iterated over, 
-the `score` and `simulate` methods of each `Circuit` in the `Population` are called. Circuits that 
-fail to simulate correctly are removed from the scoring before being returned. 
+A `Population` holds `population_size` `Circuit`s. When the `simulate` generator of a `Population` 
+is iterated over, the `score` and `simulate` methods of each `Circuit` in the `Population` are 
+called. Circuits that fail to simulate correctly are removed from the scoring before being 
+returned. 
 
 In each generation:
 
@@ -30,21 +29,22 @@ components from the two circuits to form a new circuit of the average size of th
 All circuits being `recombine`d are done in a single pass. If no viable scores exist in a 
 generation, the population is `repopulate`d.
 
- **Note**: This expects a folder (`ramdisk`) within the current directory. Ahkab uses this as a 
- scratch pad for simulation results. Ahkab's `csvlib` expects a string for `filename`, so passing 
- a `tempfile.SpooledTemporaryFile` isn't possible. You should consider mounting a ramdisk at 
- `ramdisk` for increased speed and reduced wear on your drive. For example:
+ **Note**: This expects a folder (`ramdisk`) within the current directory. If you use Ahkab, it 
+ uses this as a scratch pad for simulation results. Ahkab's `csvlib` expects a string for 
+ `filename`, so passing a `tempfile.SpooledTemporaryFile` isn't possible. You should consider 
+ mounting a ramdisk at `ramdisk` for increased speed and reduced wear on your drive. For example:
 
 >
     $ mkdir ramdisk
     $ sudo mount -t tmpfs none ramdisk
 
-If you want to see the raw results of Ahkab's analysis, you can `cat ramdisk/sim.ac`, or for 
-near-realtime viewing, you can `watch -n0.1 cat ramdisk/sim.ac`. You can set `debug = True` to
+If you want to see the raw results of the simulator's analysis, you can `cat ramdisk/sim.ac`, or 
+for near-realtime viewing, you can `watch -n0.1 cat ramdisk/sim.ac`. You can set `debug = True` to
 increase the simulation verbosity and include mutation and recombination details.
 
  This is tested on Python 2.7.6 with 
- [a fork of Ahkab](https://github.com/weilawei/ahkab/), SciPy 0.12.1, NumPy 1.7.1, and SymPy 0.7.2. 
+ [a fork of Ahkab](https://github.com/weilawei/ahkab/) as the external simulator. 
+ [Ahkab](https://github.com/ahkab/ahkab/) requires SciPy 0.12.1, NumPy 1.7.1, and SymPy 0.7.2. 
 
 **Usage**: `./toyga.py`
 

@@ -24,9 +24,10 @@ In each generation:
 no effect. Recombination selects randomly from the pool of potential circuits and selects random 
 components from the two circuits to form a new circuit of the average size of the parent circuits. 
 All circuits being `recombine`d are done in a single pass. If no viable scores exist in a 
-generation, the population is `repopulate`d.
+generation, the population is `repopulate`d. You can set `debug = True` to increase the simulation 
+verbosity and include mutation and recombination details.
 
- **Note**: This expects a folder (`ramdisk`) within the current directory. If you use Ahkab, it 
+ **Note**: If you use Ahkab, you need a folder (`ramdisk`) within the current directory. Ahkab 
  uses this as a scratch pad for simulation results. Ahkab's `csvlib` expects a string for 
  `filename`, so passing a `tempfile.SpooledTemporaryFile` isn't possible. You should consider 
  mounting a ramdisk at `ramdisk` for increased speed and reduced wear on your drive. For example:
@@ -35,9 +36,8 @@ generation, the population is `repopulate`d.
     $ mkdir ramdisk
     $ sudo mount -t tmpfs none ramdisk
 
-If you want to see the raw results of the simulator's analysis, you can `cat ramdisk/sim.ac`, or 
-for near-realtime viewing, you can `watch -n0.1 cat ramdisk/sim.ac`. You can set `debug = True` to
-increase the simulation verbosity and include mutation and recombination details.
+If you want to see the raw results of Ahkab's analysis, you can `cat ramdisk/sim.ac`, or 
+for near-realtime viewing, you can `watch -n0.1 cat ramdisk/sim.ac`.
 
  This is tested on Python 2.7.6 with 
  [a fork of Ahkab](https://github.com/weilawei/ahkab/) as the external simulator. 

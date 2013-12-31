@@ -11,7 +11,7 @@ import time
 import copy
 from pprint import pprint as pp
 
-debug = False
+debug = True
 
 if debug: print "Using `ahkab` %s" % ahkab.ahkab.__version__
 
@@ -356,10 +356,7 @@ class Population(list):
                 new_population.append(new_member)
 
             #   Random new population
-            new_population += [Circuit(random=True) for i in range(0, self.population_size - len(new_population))]
-
-            #   Make sure to append to self (a `Population`) instead of overwriting with a basic `list`
-            del self[:]
+            self.repopulate()
             self += new_population
 
 if __name__ == '__main__':

@@ -42,7 +42,7 @@ If you want to see the raw results of the simulator's analysis, you can `cat ram
 for near-realtime viewing, you can `watch -n0.1 cat ramdisk/sim.ac`. You can set `debug = True` to
 increase the simulation verbosity and include mutation and recombination details.
 
- This is tested on Python 2.7.6 with 
+ This has been tested on Python 2.7.6 with 
  [a fork of Ahkab](https://github.com/weilawei/ahkab/) as the external simulator. 
  [Ahkab](https://github.com/ahkab/ahkab/) requires SciPy 0.12.1, NumPy 1.7.1, and SymPy 0.7.2. 
 

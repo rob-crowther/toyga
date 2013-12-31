@@ -246,22 +246,22 @@ class Circuit(list):
         return sum([a_weight * a_score for (a_weight, a_score) in zip(self.weights, a_score)])
 
 class Population(list):
-    def __init__(self, population=None, population_size=200, top_n=5, generation=0):
-        self.population_size    = population_size
-        self.top_n              = top_n
-        self.generation         = generation
+    def __init__(self, population=None, size=200, top_n=5, generation=0):
+        self.size       = size
+        self.top_n      = top_n
+        self.generation = generation
 
-        self.repopulate(population=population, population_size=self.population_size)
+        self.repopulate(population=population, size=self.size)
 
-    def repopulate(self, population=None, population_size=None):
-        if population_size: self.population_size = population_size
+    def repopulate(self, population=None, size=None):
+        if size: self.size = size
 
         #   Make sure to append to self (a `Population`) instead of overwriting with a basic `list`
         del self[:]
         if population:
             self += population
         else:
-            self += [Circuit(random=True) for i in range(0, self.population_size)]
+            self += [Circuit(random=True) for i in range(0, self.size)]
 
     def recombine(self, a, b):
         a_circuit = Circuit()
@@ -342,7 +342,7 @@ class Population(list):
 if __name__ == '__main__':
     desired_score   = 1000
     top_score       = None
-    a_population    = Population(population_size=20, top_n=1)
+    a_population    = Population(size=20, top_n=1)
     pre_seed        = False
 
     if pre_seed:
@@ -373,7 +373,7 @@ if __name__ == '__main__':
 
         #   Append the seed circuit to the population
         a_population.append(a_circuit)
-        a_population.population_size += 1
+        a_population.size += 1
 
     for (generation, scores) in a_population.simulate() :
         #   Print out the remaining circuits

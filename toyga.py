@@ -2,17 +2,18 @@
 
 import random
 import ahkab as sim
-import scipy
-import scipy.interpolate
-import numpy
 import math
 import time
 import copy
 from pprint import pprint as pp
 
-debug = True
+debug = False
 
-if debug: print "Using sim: `%s` %s" % (sim.__name__, sim.__version__)
+#   Print the modules being used for the external simulator
+if debug:
+    using_modules = [sim.circuit, sim.devices, sim.printing]
+    using_modules = ["%s %s" % (m.__name__, m.__version__) for m in using_modules]
+    print "Using:\n    %s" % '\n    '.join(using_modules)
 
 class Component(object):
     def __init__(self, part_id=None, n1=None, n2=None, value=None):
@@ -217,7 +218,7 @@ class Circuit(list):
     def score(self):
         try:
             #   Ask the simulator to calculate max. attenuation in the pass band and min. attenuation in the stop band
-            mapsb = sim.utilities.mapsb(self.simulate(), 2e3, 6.5e3)
+            mapsb = sim.utilities.MAPSB(self.simulate(), 2e3, 6.5e3)
             
             self.max_attenuation_pass_band = (2e3, mapsb[0])
             self.min_attenuation_stop_band = (6.5e3, mapsb[1])

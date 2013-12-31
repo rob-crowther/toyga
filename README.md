@@ -9,10 +9,7 @@ runs an AC analysis and toyga generates new circuits to minimize the maximum att
 pass band and maximize the minimum attenuation in the stop band. If `pre_seed` is altered to
 `pre_seed = True`, the population will be seeded with one or more-existing circuits.
 
-A `Population` holds `population_size` `Circuit`s. When the `simulate` generator of a `Population` 
-is iterated over, the `score` and `simulate` methods of each `Circuit` in the `Population` are 
-called. Circuits that fail to simulate correctly are removed from the scoring before being 
-returned. 
+A `Population` holds `population_size` `Circuit`s. When the `simulate` generator of a `Population` is iterated over, the `score` and `simulate` methods of each `Circuit` in the `Population` are called. Circuits that fail to simulate correctly are removed from the scoring before being returned. 
 
 In each generation:
 
@@ -42,7 +39,7 @@ If you want to see the raw results of the simulator's analysis, you can `cat ram
 for near-realtime viewing, you can `watch -n0.1 cat ramdisk/sim.ac`. You can set `debug = True` to
 increase the simulation verbosity and include mutation and recombination details.
 
- This has been tested on Python 2.7.6 with 
+ This is tested on Python 2.7.6 with 
  [a fork of Ahkab](https://github.com/weilawei/ahkab/) as the external simulator. 
  [Ahkab](https://github.com/ahkab/ahkab/) requires SciPy 0.12.1, NumPy 1.7.1, and SymPy 0.7.2. 
 

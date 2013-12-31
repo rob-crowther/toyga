@@ -187,7 +187,7 @@ class Circuit(list):
     #   Drive the Ahkab circuit simulator
     def simulate(self):
         #   Build a copy of the circuit for Ahkab
-        self.circuit = circuit.circuit(title=self.title)
+        self.circuit = circuit.Circuit(title=self.title)
 
         #   Create nodes
         for i in range(0, self.num_nodes):

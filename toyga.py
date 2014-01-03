@@ -217,16 +217,18 @@ class Circuit(list):
         print "Minimum attenuation in the stop band (%g Hz - Inf) is %g dB\n\n" % self.min_attenuation_stop_band
 
     def score(self):
-        try:
-            #   Ask the simulator to calculate max. attenuation in the pass band and min. attenuation in the stop band
-            mapsb = sim.utilities.MAPSB(self.simulate(), 2e3, 6.5e3)
-            
-            self.max_attenuation_pass_band = (2e3, mapsb[0])
-            self.min_attenuation_stop_band = (6.5e3, mapsb[1])
+        #try:
+        #   Ask the simulator to calculate max. attenuation in the pass band and min. attenuation in the stop band
+        mapsb = sim.utilities.MAPSB(self.simulate(), 2e3, 6.5e3)
+        
+        self.max_attenuation_pass_band = (2e3, mapsb[0])
+        self.min_attenuation_stop_band = (6.5e3, mapsb[1])
         #   If ANYTHING goes wrong, we just mark the circuit as bad. Lazy. (Possibly bad. Probably bad.)
-        except: return None
+        #except: return None
 
-        #   Eliminate unusable results
+        #   Select for results
+        #   The comparisons here can be altered to act as weights for complete selection or rejection
+        #   e.g., (self.min_attenuation_stop_band[1] < 15) will reject any circuit with an MASB < 15 dB
         if (self.max_attenuation_pass_band[1] == -0) or math.isnan(self.max_attenuation_pass_band[1]):
             return None
         if (self.min_attenuation_stop_band[1] == -0) or math.isnan(self.min_attenuation_stop_band[1]):

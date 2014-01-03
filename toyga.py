@@ -138,6 +138,7 @@ class Circuit(list):
             print 'Mutating (from):'
             pp(self)
 
+        #   Adjust values to adjust probability of each mutation. Highest value is 1000 or less.
         if  mutation < 400:     self.mutate_delete()
         elif mutation < 500:    self.mutate_add()
         elif mutation < 800:    self.mutate_value()

@@ -4,6 +4,7 @@
 from warnings import warn
 import numpy
 import scipy
+import scipy.interpolate
 
 def MAPSB(results, label, pass_band, stop_band):
     """Maximum attenuation pass band/Minimum attenuation stop band"""

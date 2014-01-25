@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 
-import sim
 import random
 import math
 import time
 import copy
 from pprint import pprint as pp
+from .objectfns import MAPSB
+
+import ahkab as sim
 
 debug = False
 
@@ -204,7 +206,7 @@ class Circuit(list):
 
         #   Add a voltage source
         voltage_step = sim.devices.pulse(v1=0, v2=1, td=500e-9, tr=1e-12, pw=1, tf=1e-12, per=2)
-        self.circuit.add_vsource(part_id='V1', n1='n1', n2='0', value=5, vac=1, function=voltage_step)
+        self.circuit.add_vsource(part_id='V1', n1='n1', n2='0', dc_value=5, ac_value=1, function=voltage_step)
 
         #   Simulate the circuit with an AC analysis
         return sim.ac.ac_analysis(self.circuit, 1e3, 100, 1e5, 'LOG', outfile=self.outfile, verbose=self.sim_verbosity)
@@ -218,7 +220,7 @@ class Circuit(list):
     def score(self):
         try:
             #   Ask the simulator to calculate max. attenuation in the pass band and min. attenuation in the stop band
-            mapsb = sim.utilities.MAPSB(self.simulate(), 2e3, 6.5e3)
+            mapsb = MAPSB(self.simulate(), 'Vn4', 2e3, 6.5e3)
             
             self.max_attenuation_pass_band = (2e3, mapsb[0])
             self.min_attenuation_stop_band = (6.5e3, mapsb[1])

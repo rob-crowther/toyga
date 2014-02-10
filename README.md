@@ -30,6 +30,8 @@ All circuits being `recombine`d are done in a single pass. If no viable scores e
 generation, the population is `repopulate`d. You can set `debug = True` to increase the simulation 
 verbosity and include mutation and recombination details.
 
+**Contributors**: [Rob Crowther](https://github.com/weilawei), Luke Dyson, [Giuseppe Venturini](https://github.com/ggventurini)
+
  **Note**: If you use Ahkab, you need a folder (`ramdisk`) within the current directory. Ahkab 
  uses this as a scratch pad for simulation results. Ahkab's `csvlib` expects a string for 
  `filename`, so passing a `tempfile.SpooledTemporaryFile` isn't possible. You should consider 

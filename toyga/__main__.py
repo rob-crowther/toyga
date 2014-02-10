@@ -7,7 +7,7 @@ import copy
 from pprint import pprint as pp
 from .objectfns import MAPSB
 
-import ahkab as sim
+import sim
 
 debug = False
 
@@ -341,7 +341,7 @@ class Population(list):
             self.repopulate()
             self += new_population
 
-if __name__ == '__main__':
+def run_sample():
     desired_score   = 1000
     top_score       = None
     a_population    = Population(size=20, top_n=1)

@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 
-import sim
 import random
 import math
 import time
 import copy
 from pprint import pprint as pp
+from .objectfns import MAPSB
+
+import ahkab as sim
 
 debug = False
 
@@ -218,7 +220,7 @@ class Circuit(list):
     def score(self):
         try:
             #   Ask the simulator to calculate max. attenuation in the pass band and min. attenuation in the stop band
-            mapsb = sim.utilities.MAPSB(self.simulate(), 2e3, 6.5e3)
+            mapsb = MAPSB(self.simulate(), 'Vn4', 2e3, 6.5e3)
             
             self.max_attenuation_pass_band = (2e3, mapsb[0])
             self.min_attenuation_stop_band = (6.5e3, mapsb[1])
